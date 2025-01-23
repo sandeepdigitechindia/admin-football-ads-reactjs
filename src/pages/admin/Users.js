@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DataTable from "react-data-table-component";
-import Sidebar from "../../components/club/Sidebar";
+import Sidebar from "../../components/admin/Sidebar";
 
 // Dummy data for applicants (Replace with actual data from API or state)
 const initialApplicants = [
@@ -37,7 +37,7 @@ const initialApplicants = [
   },
 ];
 
-const ClubPostApplicant = () => {
+const Users = () => {
   const navigate = useNavigate();
   const [applicants, setApplicants] = useState(initialApplicants);
   const [searchTerm, setSearchTerm] = useState("");
@@ -138,7 +138,7 @@ const ClubPostApplicant = () => {
         <div className="text-center">
           <button
             className="py-2 px-4 bg-blue-500 text-white rounded hover:bg-blue-600 transition shadow"
-            onClick={() => navigate(`/club/post/applicant/view/${row.id}`)}
+            onClick={() => navigate(`/admin/post/applicant/view/${row.id}`)}
           >
             View
           </button>
@@ -255,4 +255,4 @@ const ClubPostApplicant = () => {
   );
 };
 
-export default ClubPostApplicant;
+export default Users;

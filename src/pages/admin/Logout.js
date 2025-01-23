@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom"; // to redirect after logout
-import Sidebar from "../../components/club/Sidebar";
+import Sidebar from "../../components/admin/Sidebar";
 const Logout = () => {
   const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();

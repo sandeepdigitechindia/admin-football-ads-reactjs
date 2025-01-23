@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Sidebar from "../../components/user/Sidebar";
+import Sidebar from "../../components/admin/Sidebar";
 import { Link } from "react-router-dom";
 
 const PostForm = () => {
@@ -70,7 +70,7 @@ const PostForm = () => {
           <header className="flex justify-between items-center flex-wrap gap-4">
             <h1 className="text-3xl font-bold text-gray-800">Posts</h1>
             <Link
-              to={"/user/posts"}
+              to={"/admin/posts"}
               className="py-2 px-6 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition"
             >
               &#8592; Back

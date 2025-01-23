@@ -15,11 +15,12 @@ const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   const menuItems = [
-    { name: "Dashboard", link: "/user/dashboard", icon: <FaTachometerAlt /> },
-    { name: "Posts", link: "/user/posts", icon: <FaClipboardList /> },
-    { name: "Subscriptions", link: "/user/subscriptions", icon: <FaDollarSign /> },
-    { name: "Settings", link: "/user/settings", icon: <FaCogs /> },
-    { name: "Logout", link: "/user/logout", icon: <FaSignOutAlt /> },
+    { name: "Dashboard", link: "/admin/dashboard", icon: <FaTachometerAlt /> },
+    { name: "Users", link: "/admin/users", icon: <FaClipboardList /> },
+    { name: "Posts", link: "/admin/posts", icon: <FaClipboardList /> },
+    { name: "Subscriptions", link: "/admin/subscriptions", icon: <FaDollarSign /> },
+    { name: "Settings", link: "/admin/settings", icon: <FaCogs /> },
+    { name: "Logout", link: "/admin/logout", icon: <FaSignOutAlt /> },
   ];
 
   const toggleMenu = () => {

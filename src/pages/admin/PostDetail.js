@@ -1,6 +1,6 @@
 import React from "react";
 import { useParams } from "react-router-dom";
-import Sidebar from "../../components/user/Sidebar";
+import Sidebar from "../../components/admin/Sidebar";
 
 const PostDetail = () => {
   const { id } = useParams();
@@ -40,12 +40,12 @@ const PostDetail = () => {
             <h1 className="text-4xl font-extrabold text-gray-900">
               Job Details
             </h1>
-            <button
+            {/* <button
               onClick={() => alert(`You applied for ${job.title}`)}
-              className="py-2 px-6 bg-blue-600 text-white text-lg rounded hover:bg-blue-700 transition shadow-lg"
+              className="py-3 px-10 bg-blue-600 text-white text-lg font-semibold rounded hover:bg-blue-700 transition shadow-lg"
             >
               Apply Now
-            </button>
+            </button> */}
           </header>
 
           {/* Job Details Section */}

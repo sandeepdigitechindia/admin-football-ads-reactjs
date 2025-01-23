@@ -1,5 +1,5 @@
 import React from "react";
-import Sidebar from "../../components/user/Sidebar";
+import Sidebar from "../../components/admin/Sidebar";
 
 const Subscriptions = () => {
   // Sample subscription data

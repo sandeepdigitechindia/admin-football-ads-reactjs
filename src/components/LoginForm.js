@@ -67,7 +67,7 @@ const LoginForm = () => {
         {/* Right Side - Login Form */}
         <div className="w-full lg:w-1/2 p-8">
           <h2 className="text-2xl text-blue-600 font-bold text-center mb-6">
-            Login
+            Admin Login
           </h2>
           <form onSubmit={handleSubmit} noValidate>
             {/* Email Field */}
@@ -136,38 +136,18 @@ const LoginForm = () => {
             </div>
           </form>
 
-          <div className="mt-4 text-center">
-            <p>Or login with:</p>
-            <div className="flex justify-center space-x-4 mt-4">
-              {/* Google Login Button */}
-              <button className="flex items-center justify-center bg-red-600 text-white py-2 px-4 rounded-lg w-full max-w-xs hover:bg-red-700 transition duration-300">
-                <i className="fab fa-google mr-2"></i> Google
-              </button>
-
-              {/* Facebook Login Button */}
-              <button className="flex items-center justify-center bg-blue-700 text-white py-2 px-4 rounded-lg w-full max-w-xs hover:bg-blue-800 transition duration-300">
-                <i className="fab fa-facebook-f mr-2"></i> Facebook
-              </button>
-            </div>
-          </div>
-
-          <p className="text-center mt-2">
+          {/* <p className="text-center mt-2">
             Don't have an account? &nbsp;
             <Link to="/register" className="text-blue-600">
               Sign Up
             </Link>
-          </p>
-          <p className="text-center mt-2">
-            Go to &nbsp;
-            <Link to="/user/dashboard" className="text-blue-600">
-              User Dashboard
-            </Link>
-          </p>
+          </p> */}
+          
           <br />
           <p className="text-center mt-2">
             Go to &nbsp;
-            <Link to="/club/dashboard" className="text-blue-600">
-              Club Dashboard
+            <Link to="/admin/dashboard" className="text-blue-600">
+              Admin Dashboard
             </Link>
           </p>
         </div>

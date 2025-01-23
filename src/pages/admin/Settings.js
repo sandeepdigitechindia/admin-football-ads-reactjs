@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import Sidebar from "../../components/user/Sidebar";
-
-// Sample countries
+import Sidebar from "../../components/admin/Sidebar";
+// Sample countries and roles
 const countries = [
   "United States",
   "India",
@@ -13,30 +12,34 @@ const countries = [
 const Settings = () => {
   const [activeTab, setActiveTab] = useState("profile");
   const [formData, setFormData] = useState({
+    club_name: "",
+    club_logo: null,
     firstName: "",
     lastName: "",
     email: "",
     phone: "",
-    dob: "",
     country: "",
     password: "",
     confirmPassword: "",
     currentPassword: "",
-    profilePicture: null, // For the profile picture
-    upload_cv: null,
+    profilePicture: null,
   });
 
-  const [preview, setPreview] = useState(null); // For profile picture preview
-
   const [errors, setErrors] = useState({});
-
   const handleTabChange = (tab) => setActiveTab(tab);
+  const [preview, setPreview] = useState(null); // For profile picture preview
 
   const validate = () => {
     const newErrors = {};
 
     // Validation similar to the registration form, adjust based on whether it's password change or profile update
     if (activeTab === "profile") {
+      if (!formData.club_name.trim()) {
+        newErrors.club_name = "Club Name is required.";
+      }
+      if (!formData.club_logo) {
+        newErrors.club_logo = "Club Logo is required.";
+      }
       if (!formData.firstName.trim()) {
         newErrors.firstName = "First Name is required.";
       }
@@ -49,20 +52,18 @@ const Settings = () => {
       if (!formData.phone.trim()) {
         newErrors.phone = "Phone number is required.";
       }
-      if (!formData.dob.trim()) {
-        newErrors.dob = "DOB number is required.";
-      }
       if (!formData.country) {
         newErrors.country = "Please select a country.";
       }
-      if (!formData.upload_cv) newErrors.upload_cv = "Upload CV is required.";
     }
+
     if (activeTab === "password") {
+      // Password change validation
       if (!formData.currentPassword) {
         newErrors.currentPassword = "Current password is required.";
       }
       if (!formData.password) {
-        newErrors.password = "New password is required.";
+        newErrors.password = "Password is required.";
       } else if (
         !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(
           formData.password
@@ -71,6 +72,7 @@ const Settings = () => {
         newErrors.password =
           "Password must be at least 8 characters, include uppercase, lowercase, number, and special character.";
       }
+
       if (!formData.confirmPassword) {
         newErrors.confirmPassword = "Please confirm your password.";
       } else if (formData.confirmPassword !== formData.password) {
@@ -80,10 +82,6 @@ const Settings = () => {
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
-
-  const handleFileChange = (e) => {
-    setFormData((prev) => ({ ...prev, upload_cv: e.target.files[0] }));
   };
 
   const handleChange = (e) => {
@@ -103,19 +101,18 @@ const Settings = () => {
       alert("Changes saved!");
       // Reset or update the form
       setFormData({
+        club_name: "",
+        club_logo: null,
         firstName: "",
         lastName: "",
         email: "",
         phone: "",
-        dob: "",
         country: "",
         password: "",
         confirmPassword: "",
         currentPassword: "",
         profilePicture: null,
-        upload_cv: null,
       });
-      setPreview(null);
       setErrors({});
     }
   };
@@ -188,6 +185,52 @@ const Settings = () => {
                   <p className="text-gray-500 text-sm mt-2">
                     Click to upload a profile picture
                   </p>
+                </div>
+
+                {/* Club Name Field */}
+                <div className="mb-4">
+                  <label
+                    htmlFor="club_name"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Club Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="club_name"
+                    name="club_name"
+                    value={formData.club_name}
+                    onChange={handleChange}
+                    className={`w-full px-4 py-2 border rounded-lg ${
+                      errors.name ? "border-red-500" : "border-gray-300"
+                    } focus:outline-none focus:ring focus:ring-blue-300`}
+                    placeholder="Enter your Club Name"
+                  />
+                  {errors.club_name && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.club_name}
+                    </p>
+                  )}
+                </div>
+
+                {/* Club Logo */}
+                <div className="mb-4">
+                  <label className="block text-gray-700 font-medium mb-2">
+                    Club Logo <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleSubmit}
+                    className={`w-full p-3 border ${
+                      errors.club_logo ? "border-red-500" : "border-gray-300"
+                    } rounded-lg`}
+                  />
+                  {errors.club_logo && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.club_logo}
+                    </p>
+                  )}
                 </div>
 
                 {/* Name Fields (First Name and Last Name) */}
@@ -293,30 +336,6 @@ const Settings = () => {
                   )}
                 </div>
 
-                {/* dob Field */}
-                <div className="mb-4">
-                  <label
-                    htmlFor="dob"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    DOB <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="date"
-                    id="dob"
-                    name="dob"
-                    value={formData.dob}
-                    onChange={handleChange}
-                    className={`w-full px-4 py-2 border rounded-lg ${
-                      errors.dob ? "border-red-500" : "border-gray-300"
-                    } focus:outline-none focus:ring focus:ring-blue-300`}
-                    placeholder="Enter your dob number"
-                  />
-                  {errors.dob && (
-                    <p className="text-red-500 text-sm mt-1">{errors.dob}</p>
-                  )}
-                </div>
-
                 {/* Country Dropdown */}
                 <div className="mb-4">
                   <label
@@ -348,25 +367,6 @@ const Settings = () => {
                   )}
                 </div>
 
-                {/* Upload Cv */}
-                <div className="mb-4">
-                  <label className="block text-gray-700 font-medium mb-2">
-                    Upload Cv <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="file"
-                    // accept="image/*"
-                    onChange={handleFileChange}
-                    className={`w-full p-3 border ${
-                      errors.upload_cv ? "border-red-500" : "border-gray-300"
-                    } rounded-lg`}
-                  />
-                  {errors.upload_cv && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.upload_cv}
-                    </p>
-                  )}
-                </div>
                 <button
                   type="submit"
                   className="bg-blue-600 text-white py-2 px-4 rounded-lg"

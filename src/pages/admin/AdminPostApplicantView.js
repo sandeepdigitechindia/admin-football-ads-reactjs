@@ -1,7 +1,7 @@
 import React from "react";
-import Sidebar from "../../components/club/Sidebar";
+import Sidebar from "../../components/admin/Sidebar";
 
-const ClubPostApplicantView = () => {
+const AdminPostApplicantView = () => {
   // Static data to replace `selectedRow`
   const selectedRow = {
     profilePic: "/common/man.png",
@@ -169,4 +169,4 @@ const ClubPostApplicantView = () => {
   );
 };
 
-export default ClubPostApplicantView;
+export default AdminPostApplicantView;

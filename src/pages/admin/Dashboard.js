@@ -1,17 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import Sidebar from "../../components/user/Sidebar";
+import Sidebar from "../../components/admin/Sidebar";
 import DataTable from "react-data-table-component";
 const Dashboard = () => {
   const navigate = useNavigate();
-  // Data for the table
   const initialData = [
     {
       id: 1,
       image: "/common/club.png",
       name: "Club 1",
       title: "Post Title 1",
-      description: "Description for Post Title 1.",
+      applicantsCount: 5,
       date: "Jan 10, 2025",
       status: "Open",
     },
@@ -20,7 +19,7 @@ const Dashboard = () => {
       image: "/common/club.png",
       name: "Club 2",
       title: "Post Title 2",
-      description: "Description for Post Title 2.",
+      applicantsCount: 2,
       date: "Jan 9, 2025",
       status: "Close",
     },
@@ -29,7 +28,7 @@ const Dashboard = () => {
       image: "/common/club.png",
       name: "Club 3",
       title: "Post Title 3",
-      description: "Description for Post Title 3.",
+      applicantsCount: 8,
       date: "Jan 8, 2025",
       status: "Archived",
     },
@@ -38,7 +37,7 @@ const Dashboard = () => {
       image: "/common/club.png",
       name: "Club 4",
       title: "Another Post",
-      description: "Description for Another Post.",
+      applicantsCount: 3,
       date: "Jan 7, 2025",
       status: "Open",
     },
@@ -46,6 +45,10 @@ const Dashboard = () => {
 
   const [data, setData] = useState(initialData);
   const [searchTerm, setSearchTerm] = useState("");
+
+  // State to manage dropdown visibility
+  const [dropdownOpen, setDropdownOpen] = useState(null);
+  const dropdownRef = useRef(null);
 
   const columns = [
     {
@@ -58,7 +61,7 @@ const Dashboard = () => {
         />
       ),
       sortable: true,
-      center: true, // Center-align the column content
+      center: true,
     },
     {
       name: "Club Name",
@@ -77,17 +80,7 @@ const Dashboard = () => {
       sortable: true,
       center: true,
     },
-    {
-      name: "Description",
-      selector: (row) => row.description,
-      sortable: true,
-      cell: (row) => (
-        <div className="text-sm text-gray-600 text-center">
-          {row.description}
-        </div>
-      ),
-      center: true,
-    },
+
     {
       name: "Date",
       selector: (row) => row.date,
@@ -116,15 +109,92 @@ const Dashboard = () => {
       center: true,
     },
     {
+      name: "Applicants with Counts",
+      selector: (row) => row.applicantsCount,
+      sortable: true,
+      cell: (row) => (
+        <div className="text-sm text-gray-600 text-center">
+          {/* Circle with applicant count and onClick event */}
+          <div
+            className="inline-flex items-center justify-center w-8 h-8 bg-blue-500 text-white rounded-full cursor-pointer"
+            onClick={() => navigate(`/admin/post/applicants/${row.id}`)} // Navigate to applicants page
+          >
+            {row.applicantsCount}
+          </div>{" "}
+          Applicants
+        </div>
+      ),
+      center: true,
+    },
+    {
       name: "Action",
       cell: (row) => (
-        <div className="text-center">
+        <div className="text-center relative">
+          {/* Action Button */}
           <button
-            className="py-2 px-4 bg-blue-500 text-white rounded hover:bg-blue-600 transition shadow"
-            onClick={() => navigate(`/user/post/${row.id}`)}
+            className="py-2 px-4 bg-blue-500 text-white rounded hover:bg-blue-600 transition flex items-center gap-2"
+            onClick={() =>
+              setDropdownOpen(dropdownOpen === row.id ? null : row.id)
+            } // Toggle dropdown
           >
-            Apply
+            <span>Action</span>
+            {/* Add a dropdown arrow icon */}
+            <i
+              className={`fas fa-chevron-down ${
+                dropdownOpen === row.id ? "transform rotate-180" : ""
+              }`}
+            ></i>
           </button>
+
+          {/* Dropdown Menu */}
+          {dropdownOpen === row.id && (
+            <div
+              ref={dropdownRef}
+              className="absolute right-0 mt-2 w-48 bg-white border rounded shadow-lg opacity-100 pointer-events-auto z-50"
+            >
+              <ul className="list-none p-0 m-0">
+                {/* View Post Option */}
+                <li>
+                  <button
+                    onClick={() => navigate(`/admin/post/view/${row.id}`)}
+                    className="w-full text-left py-2 px-4 hover:bg-gray-200 transition duration-300"
+                  >
+                    <i className="fas fa-eye mr-2"></i> View Post
+                  </button>
+                </li>
+
+                {/* Edit Post Option */}
+                <li>
+                  <button
+                    onClick={() => navigate(`/admin/post/edit/${row.id}`)}
+                    className="w-full text-left py-2 px-4 hover:bg-gray-200 transition duration-300"
+                  >
+                    <i className="fas fa-edit mr-2"></i> Edit Post
+                  </button>
+                </li>
+
+                {/* Delete Post Option */}
+                <li>
+                  <button
+                    onClick={() => handleDeletePost(row.id)}
+                    className="w-full text-left py-2 px-4 hover:bg-gray-200 transition duration-300 text-red-500"
+                  >
+                    <i className="fas fa-trash-alt mr-2"></i> Delete Post
+                  </button>
+                </li>
+
+                {/* Applicants Option */}
+                {/* <li>
+                    <button
+                      onClick={() => navigate(`/admin/post/applicants/${row.id}`)}
+                      className="w-full text-left py-2 px-4 hover:bg-gray-200 transition duration-300"
+                    >
+                      <i className="fas fa-users mr-2"></i> Applicants
+                    </button>
+                  </li> */}
+              </ul>
+            </div>
+          )}
         </div>
       ),
       center: true,
@@ -160,7 +230,7 @@ const Dashboard = () => {
         marginBottom: "10px",
         paddingTop: "10px",
         paddingBottom: "10px",
-        textAlign: "center", // Center-align the rows
+        textAlign: "center",
         "&:hover": {
           backgroundColor: "#f3f4f6",
           borderRadius: "10px",
@@ -191,6 +261,17 @@ const Dashboard = () => {
     setData(filtered);
   };
 
+  // Handle Delete Post (e.g., delete from API or state)
+  const handleDeletePost = (postId) => {
+    const isConfirmed = window.confirm(
+      "Are you sure you want to delete this post?"
+    );
+    if (isConfirmed) {
+      setData(data.filter((post) => post.id !== postId));
+      alert("Post deleted successfully!");
+    }
+  };
+
   return (
     <div className="bg-gray-100">
       {/* Wrapper for Sidebar and Main Content */}
@@ -204,17 +285,17 @@ const Dashboard = () => {
             <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
           </header>
           {/* Cards Section */}
-          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
               {
-                title: "Total Applied Posts",
+                title: "Total Registered Users",
                 count: 120,
                 gradient: "from-blue-500 via-indigo-500 to-purple-500",
                 shadow: "shadow-blue-500/50",
               },
               {
-                title: "Active Subscriptions",
-                count: 2,
+                title: "total Generated Revenue",
+                count: 20000,
                 gradient: "from-green-500 via-teal-500 to-emerald-500",
                 shadow: "shadow-green-500/50",
               },
@@ -247,7 +328,7 @@ const Dashboard = () => {
             {/* Header with Search Input */}
             <div className="flex flex-col sm:flex-row justify-between items-center mb-4">
               <h2 className="text-xl font-medium text-gray-800">
-                Recent Applied Posts
+                Recent Added Posts
               </h2>
               <div className="relative mt-2 sm:mt-0 w-full sm:w-auto">
                 <input
@@ -297,8 +378,8 @@ const Dashboard = () => {
                 renewing on <strong>Feb 10, 2025</strong>.
               </p>
               <Link
-                to="/user/subscriptions" // Add the route to user subscription page
-                className="mt-4 sm:mt-0 py-2 px-6 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+                to="/admin/subscriptions" // Add the route to club subscription page
+                className="mt-4 sm:mt-0 py-2 px-6 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
               >
                 Manage Subscription
               </Link>
