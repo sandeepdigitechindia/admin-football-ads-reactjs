@@ -1,8 +1,30 @@
 import React, { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Bar, Pie } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+} from "chart.js";
+
 import Sidebar from "../../components/admin/Sidebar";
 import DataTable from "react-data-table-component";
 const Dashboard = () => {
+  // Register chart.js components
+  ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend,
+    ArcElement
+  );
   const navigate = useNavigate();
   const initialData = [
     {
@@ -272,6 +294,32 @@ const Dashboard = () => {
     }
   };
 
+  // Example chart data for the revenue and subscription types
+  const revenueData = {
+    labels: ["January", "February", "March", "April", "May", "June"],
+    datasets: [
+      {
+        label: "Total Revenue ($)",
+        data: [500, 700, 900, 1200, 1500, 1800],
+        backgroundColor: "rgba(75, 192, 192, 0.2)",
+        borderColor: "rgba(75, 192, 192, 1)",
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const subscriptionData = {
+    labels: ["Users", "Clubs"],
+    datasets: [
+      {
+        label: "Subscriptions",
+        data: [300, 120], // Example number of user and club subscriptions
+        backgroundColor: ["#36A2EB", "#FF6384"],
+        hoverBackgroundColor: ["#36A2EB", "#FF6384"],
+      },
+    ],
+  };
+
   return (
     <div className="bg-gray-100">
       {/* Wrapper for Sidebar and Main Content */}
@@ -290,25 +338,31 @@ const Dashboard = () => {
               {
                 title: "Total Registered Users",
                 count: 120,
-                gradient: "from-blue-500 via-indigo-500 to-purple-500",
-                shadow: "shadow-blue-500/50",
+                gradient: "from-blue-400 via-indigo-500 to-purple-500",
+                darkGradient: "from-cyan-900 via-blue-800 to-indigo-900",
+                shadow: "shadow-blue-400/50",
+                darkShadow: "shadow-cyan-900/50",
               },
               {
-                title: "total Generated Revenue",
+                title: "Total Generated Revenue",
                 count: 20000,
-                gradient: "from-green-500 via-teal-500 to-emerald-500",
-                shadow: "shadow-green-500/50",
+                gradient: "from-green-400 via-teal-500 to-emerald-500",
+                darkGradient: "from-teal-900 via-green-800 to-emerald-900",
+                shadow: "shadow-green-400/50",
+                darkShadow: "shadow-teal-900/50",
               },
               {
-                title: "Job Reply Messages",
+                title: "Job Messages",
                 count: 3,
-                gradient: "from-red-500 via-pink-500 to-rose-500",
-                shadow: "shadow-red-500/50",
+                gradient: "from-red-400 via-pink-500 to-rose-500",
+                darkGradient: "from-rose-900 via-red-800 to-pink-900",
+                shadow: "shadow-red-400/50",
+                darkShadow: "shadow-rose-900/50",
               },
             ].map((card, index) => (
               <div
                 key={index}
-                className={`relative bg-gradient-to-r ${card.gradient} p-4 rounded-xl text-white transform transition duration-300 hover:-translate-y-2 hover:shadow-2xl ${card.shadow}`}
+                className={`relative bg-gradient-to-r ${card.gradient} dark:${card.darkGradient} p-6 rounded-xl text-white transform transition duration-300 hover:-translate-y-2 hover:shadow-2xl ${card.shadow} dark:${card.darkShadow}`}
               >
                 {/* Card Content */}
                 <h3 className="text-md font-semibold mb-2">{card.title}</h3>
@@ -316,12 +370,48 @@ const Dashboard = () => {
 
                 {/* Align button to bottom-right */}
                 <div className="absolute bottom-4 right-4">
-                  <button className="bg-white text-gray-800 py-2 px-4 rounded shadow hover:bg-gray-100 transition">
+                  <button className="bg-white text-gray-800 dark:bg-gray-700 dark:text-white py-1 px-3 rounded shadow hover:bg-gray-100 dark:hover:bg-gray-600 transition">
                     View Details
                   </button>
                 </div>
               </div>
             ))}
+          </section>
+
+          {/* Total Revenue & Subscription Chart Section */}
+          <section className="bg-white p-6 rounded shadow-md">
+            <h2 className="text-xl font-medium text-gray-800 mb-4">
+              Total Revenue & Subscription Breakdown
+            </h2>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Bar Chart for Total Revenue */}
+              <div className="col-span-1 h-72 sm:h-80 lg:h-[350px] flex items-center justify-center">
+                <Bar
+                  data={revenueData}
+                  options={{
+                    responsive: true,
+                    plugins: {
+                      title: { display: true, text: "Revenue Over Time" },
+                    },
+                  }}
+                />
+              </div>
+              {/* Pie Chart for Subscription Breakdown */}
+              <div className="col-span-1 h-72 sm:h-80 lg:h-[350px] flex items-center justify-center">
+                <Pie
+                  data={subscriptionData}
+                  options={{
+                    responsive: true,
+                    plugins: {
+                      title: {
+                        display: true,
+                        text: "User vs Club Subscriptions",
+                      },
+                    },
+                  }}
+                />
+              </div>
+            </div>
           </section>
 
           <div className="bg-white p-6 rounded shadow-md">
@@ -366,25 +456,6 @@ const Dashboard = () => {
               customStyles={customStyles}
             />
           </div>
-
-          {/* Active Subscription */}
-          <section className="bg-white p-6 rounded shadow-md">
-            <h2 className="text-xl font-medium text-gray-800 mb-4">
-              Active Subscription
-            </h2>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between">
-              <p className="text-gray-700">
-                You are currently subscribed to the <strong>Pro Plan</strong>,
-                renewing on <strong>Feb 10, 2025</strong>.
-              </p>
-              <Link
-                to="/admin/subscriptions" // Add the route to club subscription page
-                className="mt-4 sm:mt-0 py-2 px-6 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
-              >
-                Manage Subscription
-              </Link>
-            </div>
-          </section>
         </main>
       </div>
     </div>

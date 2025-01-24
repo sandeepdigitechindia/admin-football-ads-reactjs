@@ -1,7 +1,8 @@
 import React from "react";
 import Sidebar from "../../components/admin/Sidebar";
+import { Link } from "react-router-dom";
 
-const AdminPostApplicantView = () => {
+const AdminUserView = () => {
   // Static data to replace `selectedRow`
   const selectedRow = {
     profilePic: "/common/man.png",
@@ -18,10 +19,31 @@ const AdminPostApplicantView = () => {
     salary: "100,000",
     position: "Full-Time",
     image: "/post/post.jpg",
-    companyName: "Tech Corp",
-    companyLogo: "/common/club.png",
-    companyDescription:
-      "A leading tech company specializing in innovative solutions.",
+  };
+
+  const selectedUser = {
+    id: 1,
+    name: "John Doe",
+    appliedJobs: [
+      {
+        jobId: 1,
+        title: "Software Engineer",
+        company: "Tech Corp",
+        status: "Applied",
+      },
+      {
+        jobId: 2,
+        title: "UI/UX Designer",
+        company: "Design Ltd.",
+        status: "Interview",
+      },
+      {
+        jobId: 3,
+        title: "Product Manager",
+        company: "Product Solutions",
+        status: "Applied",
+      },
+    ],
   };
 
   return (
@@ -35,6 +57,21 @@ const AdminPostApplicantView = () => {
           <h1 className="text-3xl font-bold text-gray-800">
             User and Post Details
           </h1>
+          <div>
+            <Link
+              to={"/admin/user/edit/1"}
+              className="py-2 px-6 mx-2 bg-green-500 text-white rounded hover:bg-green-600 transition"
+            >
+              &#9998; Edit
+            </Link>
+
+            <Link
+              to={"/admin/users"}
+              className="py-2 px-6 bg-red-500 text-white rounded hover:bg-red-600 transition"
+            >
+              &#10539; Delete
+            </Link>
+          </div>
         </header>
         <div className="max-w-7xl mx-auto bg-white p-8 rounded-lg shadow-md">
           <div className="mt-4">
@@ -102,65 +139,57 @@ const AdminPostApplicantView = () => {
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
                 <div className="bg-gray-100 p-4 flex items-center gap-4">
                   <img
-                    src={selectedRow.image}
-                    alt="Post"
-                    className="w-16 h-16 rounded-lg border border-gray-300 shadow-sm"
+                    src={selectedUser.profilePic || "/common/man.png"} // Default image if no profile pic
+                    alt={selectedUser.name}
+                    className="w-16 h-16 rounded-full border border-gray-300 shadow-sm"
                   />
                   <h4 className="text-xl font-bold text-gray-800">
-                    Post Details
+                    {selectedUser.name}
                   </h4>
                 </div>
+
+                {/* Jobs Applied by User */}
                 <div className="p-4">
-                  <table className="w-full text-left text-gray-700">
-                    <tbody>
-                      <tr>
-                        <td className="font-semibold py-2">Title:</td>
-                        <td>{selectedRow.title}</td>
-                      </tr>
-                      <tr>
-                        <td className="font-semibold py-2">Description:</td>
-                        <td>{selectedRow.description}</td>
-                      </tr>
-                      <tr>
-                        <td className="font-semibold py-2">Salary:</td>
-                        <td>${selectedRow.salary}</td>
-                      </tr>
-                      <tr>
-                        <td className="font-semibold py-2">Position:</td>
-                        <td>{selectedRow.position}</td>
-                      </tr>
-                    </tbody>
-                  </table>
+                  <h5 className="text-lg font-semibold text-gray-800 mb-2">
+                    Jobs Applied:
+                  </h5>
+                  {selectedUser.appliedJobs &&
+                  selectedUser.appliedJobs.length > 0 ? (
+                    <table className="w-full text-left text-gray-700">
+                      <thead>
+                        <tr>
+                          <th className="font-semibold py-2">Job Title</th>
+                          <th className="font-semibold py-2">Company</th>
+                          <th className="font-semibold py-2">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {selectedUser.appliedJobs.map((job, index) => (
+                          <tr key={index}>
+                            <td className="py-2">{job.title}</td>
+                            <td className="py-2">{job.company}</td>
+                            <td className="py-2">
+                              <span
+                                className={`px-3 py-1 rounded-full text-sm font-medium ${
+                                  job.status === "Applied"
+                                    ? "bg-green-100 text-green-700"
+                                    : job.status === "Interview"
+                                    ? "bg-blue-100 text-blue-700"
+                                    : "bg-gray-100 text-gray-700"
+                                }`}
+                              >
+                                {job.status}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <p className="text-gray-600">No jobs applied yet.</p>
+                  )}
                 </div>
               </div>
-            </div>
-          </div>
-
-          {/* Company Details Card */}
-          <div className="bg-white rounded-lg shadow-md overflow-hidden mt-6">
-            <div className="bg-gray-100 p-4 flex items-center gap-4">
-              <img
-                src={selectedRow.companyLogo}
-                alt="Company Logo"
-                className="w-16 h-16 rounded-lg border border-gray-300 shadow-sm"
-              />
-              <h4 className="text-xl font-bold text-gray-800">
-                Company Details
-              </h4>
-            </div>
-            <div className="p-4">
-              <table className="w-full text-left text-gray-700">
-                <tbody>
-                  <tr>
-                    <td className="font-semibold py-2">Name:</td>
-                    <td>{selectedRow.companyName}</td>
-                  </tr>
-                  <tr>
-                    <td className="font-semibold py-2">Description:</td>
-                    <td>{selectedRow.companyDescription}</td>
-                  </tr>
-                </tbody>
-              </table>
             </div>
           </div>
         </div>
@@ -169,4 +198,4 @@ const AdminPostApplicantView = () => {
   );
 };
 
-export default AdminPostApplicantView;
+export default AdminUserView;

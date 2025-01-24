@@ -51,7 +51,7 @@ const LoginForm = () => {
     <div className="flex justify-center items-center min-h-screen bg-gray-50 px-4 py-16">
       <div className="flex flex-col lg:flex-row w-full max-w-5xl bg-white shadow-lg rounded-lg overflow-hidden">
         {/* Left Side - Image and Text */}
-        <div className="w-full lg:w-1/2 bg-blue-600 text-white p-8 flex flex-col justify-center">
+        <div className="w-full lg:w-1/2 bg-blue-600 text-white p-8 flex flex-col justify-center hidden lg:block">
           <h2 className="text-3xl font-bold mb-4">Welcome Back!</h2>
           <p className="text-lg mb-6">
             Log in to your account to access exclusive content and manage your
@@ -119,11 +119,11 @@ const LoginForm = () => {
             </div>
 
             {/* Accept Terms Checkbox */}
-            <div className="mb-6">
+            {/* <div className="mb-6">
               <Link to="/forget-password" className="text-blue-600">
                 Forgot Password?
               </Link>
-            </div>
+            </div> */}
 
             {/* Submit Button */}
             <div>

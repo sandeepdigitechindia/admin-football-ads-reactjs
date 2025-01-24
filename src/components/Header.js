@@ -4,7 +4,7 @@ import { UserCircleIcon } from "@heroicons/react/20/solid";
 
 export default function ClubHeader() {
   return (
-    <header className="bg-blue-900 text-white sticky top-0 z-50">
+    <header className="bg-gray-900 text-gray-300 sticky top-0 z-50 shadow-lg">
       <nav
         aria-label="Global"
         className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8"
