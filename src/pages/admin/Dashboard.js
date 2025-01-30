@@ -309,16 +309,17 @@ const Dashboard = () => {
   };
 
   const subscriptionData = {
-    labels: ["Users", "Clubs"],
+    labels: ["Users", "Clubs", "Agents", "Coaches", "Others"],
     datasets: [
       {
         label: "Subscriptions",
-        data: [300, 120], // Example number of user and club subscriptions
-        backgroundColor: ["#36A2EB", "#FF6384"],
-        hoverBackgroundColor: ["#36A2EB", "#FF6384"],
+        data: [300, 120, 80, 50, 30], 
+        backgroundColor: ["#36A2EB", "#FF6384", "#4BC0C0", "#FFCE56", "#9966FF"],
+        hoverBackgroundColor: ["#36A2EB", "#FF6384", "#4BC0C0", "#FFCE56", "#9966FF"],
       },
     ],
   };
+  
 
   return (
     <div className="bg-gray-100">
@@ -352,7 +353,7 @@ const Dashboard = () => {
                 darkShadow: "shadow-teal-900/50",
               },
               {
-                title: "Job Messages",
+                title: "Total Clubs",
                 count: 3,
                 gradient: "from-red-400 via-pink-500 to-rose-500",
                 darkGradient: "from-rose-900 via-red-800 to-pink-900",
@@ -369,7 +370,7 @@ const Dashboard = () => {
                 <p className="text-3xl font-extrabold mb-3">{card.count}</p>
 
                 {/* Align button to bottom-right */}
-                <div className="absolute bottom-4 right-4">
+                <div className="absolute bottom-2 right-2">
                   <button className="bg-white text-gray-800 dark:bg-gray-700 dark:text-white py-1 px-3 rounded shadow hover:bg-gray-100 dark:hover:bg-gray-600 transition">
                     View Details
                   </button>

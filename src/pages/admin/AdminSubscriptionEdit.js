@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 const AdminSubscriptionEdit = () => {
   const [subscription, setSubscription] = useState({
     title: "",
+    duration: "",
     price: "",
     features: [""],
   });
@@ -15,6 +16,9 @@ const AdminSubscriptionEdit = () => {
     const newErrors = {};
     if (!subscription.title.trim()) {
       newErrors.title = "Title is required.";
+    }
+    if (!subscription.duration.trim()) {
+      newErrors.duration = "Duration is required.";
     }
     if (!subscription.price || isNaN(subscription.price)) {
       newErrors.price = "Price must be a valid number.";
@@ -124,6 +128,29 @@ const AdminSubscriptionEdit = () => {
                 />
                 {errors.price && (
                   <p className="text-red-500 text-sm mt-1">{errors.price}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Duration
+                </label>
+                <select
+                  value={subscription.duration}
+                  onChange={(e) =>
+                    handleInputChange("duration", e.target.value)
+                  }
+                  className={`mt-1 w-full p-3 border rounded ${
+                    errors.duration ? "border-red-500" : "border-gray-300"
+                  }`}
+                >
+                  <option value="">Select Duration</option>
+                  <option value="3_months">3 Months</option>
+                  <option value="6_months">6 Months</option>
+                  <option value="1_year">1 Year</option>
+                </select>
+                {errors.duration && (
+                  <p className="text-red-500 text-sm mt-1">{errors.duration}</p>
                 )}
               </div>
 

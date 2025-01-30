@@ -49,19 +49,19 @@ const PostDetail = () => {
           </header>
 
           {/* Job Details Section */}
-          <section className="bg-white p-8 rounded-xl shadow-lg space-y-8">
+          <section className="bg-white p-5 rounded-xl shadow space-y-8">
             {/* Job Title and Image */}
             <div className="flex flex-col md:flex-row gap-8">
               <img
                 src={job.image}
                 alt="Job"
-                className="w-full md:w-1/3 h-60 object-cover rounded-xl shadow-md"
+                className="w-full md:w-1/3 h-40 object-cover rounded-xl shadow-md"
               />
               <div className="flex-1 space-y-6">
-                <h1 className="text-3xl font-bold text-gray-900">
+                <h1 className="text-2xl font-bold text-gray-900">
                   {job.title}
                 </h1>
-                <p className="text-gray-700 text-lg leading-relaxed">
+                <p className="text-gray-700 text leading-relaxed">
                   {job.description}
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -76,13 +76,7 @@ const PostDetail = () => {
                     <strong className="font-bold">Location:</strong>{" "}
                     {job.location}
                   </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Job Status and Date */}
-            <div className="flex flex-wrap justify-between items-center">
-              <p className="text-gray-600 text-sm">
+                  <p className="text-gray-800 font-medium">
                 <strong className="font-semibold">Posted on:</strong> {job.date}
               </p>
               <p
@@ -96,11 +90,18 @@ const PostDetail = () => {
               >
                 Status: {job.status}
               </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Job Status and Date */}
+            <div className="flex flex-wrap justify-between items-center">
+              
             </div>
           </section>
 
           {/* Company Details Section */}
-          <section className="bg-white p-8 rounded-xl shadow-lg space-y-6">
+          <section className="bg-white p-8 rounded-xl shadow space-y-6">
             <h2 className="text-2xl font-bold text-gray-900">
               Company Details
             </h2>
