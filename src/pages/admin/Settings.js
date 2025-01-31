@@ -160,9 +160,9 @@ const Settings = () => {
                       <img
                         src={preview || "/common/man.png"}
                         alt="Profile Preview"
-                        className="w-32 h-32 rounded-full object-cover border shadow-md"
+                        className="w-32 h-32 rounded-full object-cover border shadow"
                       />
-                      <span className="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full shadow-md">
+                      <span className="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full shadow">
                         <i className="fas fa-camera"></i>
                       </span>
                     </label>

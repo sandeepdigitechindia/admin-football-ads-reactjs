@@ -292,7 +292,7 @@ const Posts = () => {
             </Link>
           </header>
 
-          <div className="bg-white p-6 rounded shadow-md">
+          <div className="bg-white p-6 rounded shadow">
             {/* Header with Search Input */}
             <div className="flex flex-col sm:flex-row justify-between items-center mb-4">
               <h2 className="text-xl font-medium text-gray-800">All Posts</h2>

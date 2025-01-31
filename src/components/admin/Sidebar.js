@@ -54,7 +54,7 @@ const Sidebar = () => {
     
       {/* Mobile Hamburger Button */}
       <button
-        className="lg:hidden fixed top-4 right-4 z-50 text-gray-800 bg-white p-2 rounded-md shadow-md"
+        className="lg:hidden fixed top-4 right-4 z-50 text-gray-800 bg-white p-2 rounded-md shadow"
         onClick={toggleMenu}
       >
         {isOpen ? <FaTimes className="text-xl" /> : <FaBars className="text-xl" />}

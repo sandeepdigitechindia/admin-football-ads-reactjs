@@ -82,7 +82,7 @@ const SubscriptionForm = () => {
               &#8592; Back
             </Link>
           </header>
-          <div className="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-md">
+          <div className="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow">
             <h1 className="text-2xl font-bold text-gray-800 mb-6">
               Create Subscription
             </h1>
@@ -140,9 +140,18 @@ const SubscriptionForm = () => {
                   }`}
                 >
                   <option value="">Select Duration</option>
-                  <option value="3_months">3 Months</option>
-                  <option value="6_months">6 Months</option>
-                  <option value="1_year">1 Year</option>
+                  <option value="1">1 Month</option>
+                  <option value="2">2 Month</option>
+                  <option value="3">3 Month</option>
+                  <option value="4">4 Month</option>
+                  <option value="5">5 Month</option>
+                  <option value="6">6 Month</option>
+                  <option value="7">7 Month</option>
+                  <option value="8">8 Month</option>
+                  <option value="9">9 Month</option>
+                  <option value="10">10 Month</option>
+                  <option value="11">11 Month</option>
+                  <option value="12">12 Month</option>
                 </select>
                 {errors.duration && (
                   <p className="text-red-500 text-sm mt-1">{errors.duration}</p>
@@ -173,7 +182,7 @@ const SubscriptionForm = () => {
                       <button
                         type="button"
                         onClick={() => removeFeature(index)}
-                        className="text-red-500 hover:text-red-700"
+                        className="w-[100px] py-2 px-4 bg-red-500 text-white rounded hover:bg-red-600 transition"
                       >
                         Remove
                       </button>
@@ -186,7 +195,7 @@ const SubscriptionForm = () => {
                 <button
                   type="button"
                   onClick={addFeature}
-                  className="text-blue-500 hover:text-blue-700"
+                  className="w-[140px] py-2 my-2 px-4 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
                 >
                   Add Feature
                 </button>

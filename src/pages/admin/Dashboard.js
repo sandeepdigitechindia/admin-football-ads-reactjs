@@ -353,7 +353,7 @@ const Dashboard = () => {
                 darkShadow: "shadow-teal-900/50",
               },
               {
-                title: "Total Clubs",
+                title: "Total Ads",
                 count: 3,
                 gradient: "from-red-400 via-pink-500 to-rose-500",
                 darkGradient: "from-rose-900 via-red-800 to-pink-900",
@@ -380,7 +380,7 @@ const Dashboard = () => {
           </section>
 
           {/* Total Revenue & Subscription Chart Section */}
-          <section className="bg-white p-6 rounded shadow-md">
+          <section className="bg-white p-6 rounded shadow">
             <h2 className="text-xl font-medium text-gray-800 mb-4">
               Total Revenue & Subscription Breakdown
             </h2>
@@ -415,7 +415,7 @@ const Dashboard = () => {
             </div>
           </section>
 
-          <div className="bg-white p-6 rounded shadow-md">
+          <div className="bg-white p-6 rounded shadow">
             {/* Header with Search Input */}
             <div className="flex flex-col sm:flex-row justify-between items-center mb-4">
               <h2 className="text-xl font-medium text-gray-800">

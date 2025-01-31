@@ -211,7 +211,7 @@ const AdminPostApplicant = () => {
             Applicants for Post
           </h1>
         </header>
-        <div className="max-w-7xl mx-auto bg-white p-6 rounded-lg shadow-md">
+        <div className="max-w-7xl mx-auto bg-white p-6 rounded-lg shadow">
           <div className="flex flex-col sm:flex-row justify-between items-center mb-4">
             <h2 className="text-xl font-medium text-gray-800">
               Applicants for Post

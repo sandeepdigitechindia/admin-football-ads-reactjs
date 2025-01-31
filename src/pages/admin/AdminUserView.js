@@ -73,11 +73,11 @@ const AdminUserView = () => {
             </Link>
           </div>
         </header>
-        <div className="max-w-7xl mx-auto bg-white p-8 rounded-lg shadow-md">
+        <div className="max-w-7xl mx-auto bg-white p-8 rounded-lg shadow">
           <div className="mt-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* User Card */}
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div className="bg-white rounded-lg shadow overflow-hidden">
                 <div className="bg-gray-100 p-4 flex items-center gap-4">
                   <img
                     src={selectedRow.profilePic}
@@ -136,7 +136,7 @@ const AdminUserView = () => {
               </div>
 
               {/* Post Card */}
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div className="bg-white rounded-lg shadow overflow-hidden">
                 <div className="bg-gray-100 p-4 flex items-center gap-4">
                   <img
                     src={selectedUser.profilePic || "/common/man.png"} // Default image if no profile pic

@@ -135,7 +135,7 @@ const ClubForm = () => {
               &#8592; Back
             </Link>
           </header>
-          <div className="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-md">
+          <div className="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow">
             <h1 className="text-2xl font-bold text-gray-800 mb-6">
               Create Club
             </h1>

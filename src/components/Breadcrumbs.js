@@ -29,7 +29,7 @@ const Breadcrumbs = () => {
           {pageHeading}
         </h1>
 
-        <nav className="bg-gray-100 inline-block py-2 px-4 rounded-md text-sm shadow-md">
+        <nav className="bg-gray-100 inline-block py-2 px-4 rounded-md text-sm shadow">
           <ol className="flex justify-center space-x-2 text-gray-600">
             <li>
               <Link to="/" className="text-blue-600 hover:underline">

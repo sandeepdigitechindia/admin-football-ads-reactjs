@@ -55,7 +55,7 @@ const PostDetail = () => {
               <img
                 src={job.image}
                 alt="Job"
-                className="w-full md:w-1/3 h-40 object-cover rounded-xl shadow-md"
+                className="w-full md:w-1/3 h-40 object-cover rounded-xl shadow"
               />
               <div className="flex-1 space-y-6">
                 <h1 className="text-2xl font-bold text-gray-900">
@@ -109,7 +109,7 @@ const PostDetail = () => {
               <img
                 src={job.company.logo}
                 alt="Company Logo"
-                className="w-24 h-24 rounded-lg shadow-md border"
+                className="w-24 h-24 rounded-lg shadow border"
               />
               <div className="space-y-2">
                 <h3 className="text-xl font-semibold text-gray-800">
