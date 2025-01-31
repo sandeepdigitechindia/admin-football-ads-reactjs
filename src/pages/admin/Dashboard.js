@@ -313,13 +313,24 @@ const Dashboard = () => {
     datasets: [
       {
         label: "Subscriptions",
-        data: [300, 120, 80, 50, 30], 
-        backgroundColor: ["#36A2EB", "#FF6384", "#4BC0C0", "#FFCE56", "#9966FF"],
-        hoverBackgroundColor: ["#36A2EB", "#FF6384", "#4BC0C0", "#FFCE56", "#9966FF"],
+        data: [300, 120, 80, 50, 30],
+        backgroundColor: [
+          "#36A2EB",
+          "#FF6384",
+          "#4BC0C0",
+          "#FFCE56",
+          "#9966FF",
+        ],
+        hoverBackgroundColor: [
+          "#36A2EB",
+          "#FF6384",
+          "#4BC0C0",
+          "#FFCE56",
+          "#9966FF",
+        ],
       },
     ],
   };
-  
 
   return (
     <div className="bg-gray-100">
@@ -339,31 +350,29 @@ const Dashboard = () => {
               {
                 title: "Total Registered Users",
                 count: 120,
-                gradient: "from-blue-400 via-indigo-500 to-purple-500",
-                darkGradient: "from-cyan-900 via-blue-800 to-indigo-900",
+                backgroundColor: "#36A2EB", // Blue
                 shadow: "shadow-blue-400/50",
-                darkShadow: "shadow-cyan-900/50",
+                darkShadow: "shadow-blue-900/50",
               },
               {
                 title: "Total Generated Revenue",
                 count: 20000,
-                gradient: "from-green-400 via-teal-500 to-emerald-500",
-                darkGradient: "from-teal-900 via-green-800 to-emerald-900",
-                shadow: "shadow-green-400/50",
-                darkShadow: "shadow-teal-900/50",
+                backgroundColor: "#FFCE56", // Red
+                shadow: "shadow-red-400/50",
+                darkShadow: "shadow-red-900/50",
               },
               {
                 title: "Total Ads",
                 count: 3,
-                gradient: "from-red-400 via-pink-500 to-rose-500",
-                darkGradient: "from-rose-900 via-red-800 to-pink-900",
-                shadow: "shadow-red-400/50",
-                darkShadow: "shadow-rose-900/50",
+                backgroundColor: "#9966FF", // Teal
+                shadow: "shadow-teal-400/50",
+                darkShadow: "shadow-teal-900/50",
               },
             ].map((card, index) => (
               <div
                 key={index}
-                className={`relative bg-gradient-to-r ${card.gradient} dark:${card.darkGradient} p-6 rounded-xl text-white transform transition duration-300 hover:-translate-y-2 hover:shadow-2xl ${card.shadow} dark:${card.darkShadow}`}
+                className={`relative p-8 min-h-[160px] rounded-xl text-white transform transition duration-300 hover:-translate-y-2 hover:shadow-2xl ${card.shadow} dark:${card.darkShadow}`}
+                style={{ backgroundColor: card.backgroundColor }}
               >
                 {/* Card Content */}
                 <h3 className="text-md font-semibold mb-2">{card.title}</h3>
