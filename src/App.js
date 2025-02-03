@@ -16,6 +16,10 @@ import AdminSubscriptions from './pages/admin/Subscriptions';
 import AdminSubscriptionForm from './pages/admin/SubscriptionForm';
 import AdminSubscriptionEdit from './pages/admin/AdminSubscriptionEdit';
 
+import AdminServices from './pages/admin/Services';
+import AdminServiceForm from './pages/admin/ServiceForm';
+import AdminServiceEdit from './pages/admin/AdminServiceEdit';
+
 
 
 import AdminUsers from './pages/admin/Users';
@@ -52,6 +56,10 @@ const DynamicWrapper = ({ children }) => {
       "/admin/subscriptions",
       "/admin/subscription/create",
       "/admin/subscription/edit",
+
+      "/admin/services",
+      "/admin/service/create",
+      "/admin/service/edit",
 
       "/admin/users",
       "/admin/user/create",
@@ -107,6 +115,10 @@ const App = () => {
           <Route path="/admin/subscriptions" element={<AdminSubscriptions />} />
           <Route path="/admin/subscription/create" element={<AdminSubscriptionForm />} />
           <Route path="/admin/subscription/edit/:id" element={<AdminSubscriptionEdit />} />
+
+          <Route path="/admin/services" element={<AdminServices />} />
+          <Route path="/admin/service/create" element={<AdminServiceForm />} />
+          <Route path="/admin/service/edit/:id" element={<AdminServiceEdit />} />
 
           <Route path="/admin/users" element={<AdminUsers />} />
           <Route path="/admin/user/create" element={<AdminUserForm />} />

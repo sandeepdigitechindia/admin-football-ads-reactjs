@@ -11,6 +11,7 @@ import {
   FaSignOutAlt,
   FaChevronDown,
   FaChevronUp,
+  FaTools
 } from "react-icons/fa";
 import { useState } from "react";
 
@@ -35,6 +36,11 @@ const Sidebar = () => {
       name: "Subscriptions",
       link: "/admin/subscriptions",
       icon: <FaDollarSign />,
+    },
+    {
+      name: "Services",
+      link: "/admin/services",
+      icon: <FaTools />,
     },
     { name: "Transaction History", link: "/admin/transaction-history", icon: <FaHistory /> },
     { name: "Settings", link: "/admin/settings", icon: <FaCogs /> },

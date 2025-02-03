@@ -12,7 +12,6 @@ const countries = [
 const Settings = () => {
   const [activeTab, setActiveTab] = useState("profile");
   const [formData, setFormData] = useState({
-   
     firstName: "",
     lastName: "",
     email: "",
@@ -22,6 +21,8 @@ const Settings = () => {
     confirmPassword: "",
     currentPassword: "",
     profilePicture: null,
+    siteName: "",
+    siteLogo: null,
   });
 
   const [errors, setErrors] = useState({});
@@ -33,7 +34,6 @@ const Settings = () => {
 
     // Validation similar to the registration form, adjust based on whether it's password change or profile update
     if (activeTab === "profile") {
-     
       if (!formData.firstName.trim()) {
         newErrors.firstName = "First Name is required.";
       }
@@ -74,6 +74,15 @@ const Settings = () => {
       }
     }
 
+    if (activeTab === "setting") {
+      // Setting validation
+      if (!formData.siteName.trim()) {
+        newErrors.siteName = "Site Name is required.";
+      }
+
+      if (!formData.siteLogo) newErrors.siteLogo = "Site Logo is required.";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -88,6 +97,10 @@ const Settings = () => {
     }
   };
 
+  const handleFileChange = (e) => {
+    setFormData((prev) => ({ ...prev, siteLogo: e.target.files[0] }));
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (validate()) {
@@ -95,7 +108,6 @@ const Settings = () => {
       alert("Changes saved!");
       // Reset or update the form
       setFormData({
-       
         firstName: "",
         lastName: "",
         email: "",
@@ -105,6 +117,8 @@ const Settings = () => {
         confirmPassword: "",
         currentPassword: "",
         profilePicture: null,
+        siteName: "",
+        siteLogo: null,
       });
       setErrors({});
     }
@@ -146,6 +160,16 @@ const Settings = () => {
               >
                 Change Password
               </button>
+              <button
+                className={`py-2 px-4 ${
+                  activeTab === "setting"
+                    ? "text-blue-600 border-b-2 border-blue-600"
+                    : "text-gray-600"
+                }`}
+                onClick={() => handleTabChange("setting")}
+              >
+                General Settings
+              </button>
             </div>
           </div>
 
@@ -180,7 +204,6 @@ const Settings = () => {
                   </p>
                 </div>
 
-              
                 {/* Name Fields (First Name and Last Name) */}
                 <div className="flex space-x-4 mb-4">
                   {/* First Name Field */}
@@ -407,6 +430,164 @@ const Settings = () => {
                   className="bg-blue-600 text-white py-2 px-4 rounded-lg"
                 >
                   Change Password
+                </button>
+              </form>
+            )}
+
+            {activeTab === "setting" && (
+              <form onSubmit={handleSubmit} noValidate>
+                {/* Setting  */}
+
+                <div className="mb-4">
+                  <label
+                    htmlFor="siteName"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Site Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="siteName"
+                    name="siteName"
+                    value={formData.siteName}
+                    onChange={handleChange}
+                    className={`w-full px-4 py-2 border rounded-lg ${
+                      errors.siteName ? "border-red-500" : "border-gray-300"
+                    } focus:outline-none focus:ring focus:ring-blue-300`}
+                    placeholder="Enter your site name"
+                  />
+                  {errors.siteName && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.siteName}
+                    </p>
+                  )}
+                </div>
+
+                {/* siteLogo */}
+                <div className="mb-4">
+                  <label className="block text-gray-700 font-medium mb-2">
+                    Site Logo <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className={`w-full p-3 border ${
+                      errors.siteLogo ? "border-red-500" : "border-gray-300"
+                    } rounded-lg`}
+                  />
+                  {errors.siteLogo && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.siteLogo}
+                    </p>
+                  )}
+                </div>
+
+                {/* Home Page Video */}
+                <div className="mb-4">
+                  <label className="block text-gray-700 font-medium mb-2">
+                    Home Page Video
+                  </label>
+                  <input
+                    type="file"
+                    accept="video/*"
+                    onChange={handleFileChange}
+                    className="w-full p-3 border rounded-lg"
+                  />
+                </div>
+
+                {/* Home Page Title */}
+                <div className="mb-4">
+                  <label className="block text-gray-700 font-medium mb-2">
+                    Home Page Title
+                  </label>
+                  <input
+                    type="text"
+                    name="homeTitle"
+                    value={formData.homeTitle}
+                    onChange={handleChange}
+                    className="w-full p-3 border rounded-lg"
+                  />
+                </div>
+
+                {/* Home Page Sub Title */}
+                <div className="mb-4">
+                  <label className="block text-gray-700 font-medium mb-2">
+                    Home Page Sub Title
+                  </label>
+                  <input
+                    type="text"
+                    name="homeSubTitle"
+                    value={formData.homeSubTitle}
+                    onChange={handleChange}
+                    className="w-full p-3 border rounded-lg"
+                  />
+                </div>
+
+                {/* Official Email */}
+                <div className="mb-4">
+                  <label className="block text-gray-700 font-medium mb-2">
+                    Official Email
+                  </label>
+                  <input
+                    type="email"
+                    name="officialEmail"
+                    value={formData.officialEmail}
+                    onChange={handleChange}
+                    className="w-full p-3 border rounded-lg"
+                  />
+                </div>
+
+                {/* Official Phone Number */}
+                <div className="mb-4">
+                  <label className="block text-gray-700 font-medium mb-2">
+                    Official Phone Number
+                  </label>
+                  <input
+                    type="text"
+                    name="officialPhone"
+                    value={formData.officialPhone}
+                    onChange={handleChange}
+                    className="w-full p-3 border rounded-lg"
+                  />
+                </div>
+
+                {/* Official Address */}
+                <div className="mb-4">
+                  <label className="block text-gray-700 font-medium mb-2">
+                    Official Address
+                  </label>
+                  <textarea
+                    name="officialAddress"
+                    value={formData.officialAddress}
+                    onChange={handleChange}
+                    className="w-full p-3 border rounded-lg"
+                  ></textarea>
+                </div>
+
+                {/* Social Media Links */}
+                {["Facebook", "Twitter", "Instagram", "LinkedIn"].map(
+                  (platform) => (
+                    <div key={platform} className="mb-4">
+                      <label className="block text-gray-700 font-medium mb-2">
+                        {platform} Link
+                      </label>
+                      <input
+                        type="url"
+                        name={`${platform.toLowerCase()}Link`}
+                        value={formData[`${platform.toLowerCase()}Link`]}
+                        onChange={handleChange}
+                        className="w-full p-3 border rounded-lg"
+                      />
+                    </div>
+                  )
+                )}
+
+                <button
+                  type="submit"
+                  className="bg-blue-600 text-white py-2 px-4 rounded-lg"
+                >
+                  Update
                 </button>
               </form>
             )}
