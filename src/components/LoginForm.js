@@ -1,13 +1,17 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+const BASE_URL = process.env.REACT_APP_BASE_URL;
 const LoginForm = () => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
 
+  const navigate = useNavigate();
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false); // Loading state
+  const [apiError, setApiError] = useState(null); // API error state
 
   const validate = () => {
     const newErrors = {};
@@ -37,13 +41,29 @@ const LoginForm = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validate()) {
-      console.log("Form Submitted:", formData);
+
+    if (!validate()) return;
+
+    setLoading(true);
+    setApiError(null);
+    console.log("Base URL:", BASE_URL);
+    
+    try {
+      const response = await axios.post(
+        `${BASE_URL}/admin/login`,
+        formData
+      );
+      localStorage.setItem("token", response.data.token); 
+      navigate("/admin/dashboard");
       alert("Login successful!");
       setFormData({ email: "", password: "" });
       setErrors({});
+    } catch (error) {
+      setApiError(error.response?.data?.message || "Login failed. Try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -69,6 +89,8 @@ const LoginForm = () => {
           <h2 className="text-2xl text-blue-600 font-bold text-center mb-6">
             Admin Login
           </h2>
+          {apiError && <p style={{ color: "red" }}>{apiError}</p>}
+
           <form onSubmit={handleSubmit} noValidate>
             {/* Email Field */}
             <div className="mb-4">
@@ -130,8 +152,9 @@ const LoginForm = () => {
               <button
                 type="submit"
                 className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition duration-300"
+                disabled={loading}
               >
-                Login
+                {loading ? "Logging in..." : "Login"}
               </button>
             </div>
           </form>
@@ -142,14 +165,7 @@ const LoginForm = () => {
               Sign Up
             </Link>
           </p> */}
-          
-          <br />
-          <p className="text-center mt-2">
-            Go to &nbsp;
-            <Link to="/admin/dashboard" className="text-blue-600">
-              Admin Dashboard
-            </Link>
-          </p>
+        
         </div>
       </div>
     </div>

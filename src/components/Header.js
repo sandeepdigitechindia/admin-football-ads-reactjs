@@ -18,7 +18,7 @@ export default function ClubHeader() {
         
         <div className="hidden lg:flex lg:flex-1 lg:justify-end">
             <Popover className="relative">
-              <PopoverButton className="flex items-center gap-x-2 text-sm font-semibold text-white">
+              <PopoverButton className="flex items-center gap-x-2 text-sm font-semibold text-white outline-none">
                 <UserCircleIcon className="h-6 w-6 text-white" />
                 <span>Admin Profile</span>
               </PopoverButton>

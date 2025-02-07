@@ -9,6 +9,7 @@ const Logout = () => {
   const handleLogout = () => {
     // Add your logout logic here (e.g., clear session, JWT, etc.)
     // Redirect to home or login page after logout
+    localStorage.removeItem("token");
     navigate("/login");
     alert("You have been logged out.");
   };

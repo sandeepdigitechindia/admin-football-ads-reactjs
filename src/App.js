@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -11,7 +11,6 @@ import ForgetPassword from './pages/ForgetPassword';
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminSettings from './pages/admin/Settings';
 
-
 import AdminSubscriptions from './pages/admin/Subscriptions';
 import AdminSubscriptionForm from './pages/admin/SubscriptionForm';
 import AdminSubscriptionEdit from './pages/admin/AdminSubscriptionEdit';
@@ -19,8 +18,6 @@ import AdminSubscriptionEdit from './pages/admin/AdminSubscriptionEdit';
 import AdminServices from './pages/admin/Services';
 import AdminServiceForm from './pages/admin/ServiceForm';
 import AdminServiceEdit from './pages/admin/AdminServiceEdit';
-
-
 
 import AdminUsers from './pages/admin/Users';
 import AdminUserForm from './pages/admin/UserForm';
@@ -32,7 +29,6 @@ import AdminClubForm from './pages/admin/ClubForm';
 import AdminClubView from './pages/admin/AdminClubView';
 import AdminClubEdit from './pages/admin/AdminClubEdit';
 
-
 import AdminPosts from './pages/admin/Posts';
 import AdminPostForm from './pages/admin/PostForm';
 import AdminPostEditForm from './pages/admin/PostEditForm';
@@ -40,106 +36,81 @@ import AdminPostDetail from './pages/admin/PostDetail';
 import AdminPostApplicant from './pages/admin/AdminPostApplicant';
 
 import TransactionHistory from './pages/admin/TransactionHistory';
-
 import AdminLogout from './pages/admin/Logout';
+import isAuthenticated from "./authMiddleware";
+import ProtectedRoute from './components/ProtectedRoute'; // Import ProtectedRoute
 
-// Component to handle headers and footers dynamically
 const DynamicWrapper = ({ children }) => {
   const location = useLocation();
-
-  // Function to determine if the header should be rendered
-  const shouldRenderHeader = () => {
-    const adminRoutes = [
-      "/admin/dashboard",
-      "/admin/settings",
-
-      "/admin/subscriptions",
-      "/admin/subscription/create",
-      "/admin/subscription/edit",
-
-      "/admin/services",
-      "/admin/service/create",
-      "/admin/service/edit",
-
-      "/admin/users",
-      "/admin/user/create",
-      "/admin/user/view",
-      "/admin/user/edit",
-
-      "/admin/clubs",
-      "/admin/club/create",
-      "/admin/club/view",
-      "/admin/club/edit",
-      "/admin/post/club/view",
-
-      "/admin/posts",
-      "/admin/post/create",
-      
-      "/admin/post/view",
-      "/admin/post/edit",
-      "/admin/post/applicants", 
-      "/admin/post/applicant/view",
-      
-      "/admin/transaction-history",
-
-      "/admin/logout",
-    ];
-    return adminRoutes.some((route) => location.pathname.startsWith(route));
-  };
+  const adminRoutes = ["/admin"];
+  const shouldRenderHeader = () => adminRoutes.some(route => location.pathname.startsWith(route));
 
   return (
     <>
       {shouldRenderHeader() && <Header />}
       {children}
       {shouldRenderHeader() && <Footer />}
-
     </>
   );
 };
 
-// Main App Component
 const App = () => {
   return (
     <Router>
       <DynamicWrapper>
         <Routes>
-          <Route path="/" element={<Login />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/forget-password" element={<ForgetPassword />} />
 
-          {/* admin routes */}
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/admin/settings" element={<AdminSettings />} />
+        <Route
+          path="/"
+          element={!isAuthenticated() ? <Login /> : <Navigate to="/admin/dashboard" />}
+        />
 
-          <Route path="/admin/subscriptions" element={<AdminSubscriptions />} />
-          <Route path="/admin/subscription/create" element={<AdminSubscriptionForm />} />
-          <Route path="/admin/subscription/edit/:id" element={<AdminSubscriptionEdit />} />
+        <Route
+          path="/login"
+          element={!isAuthenticated() ? <Login /> : <Navigate to="/admin/dashboard" />}
+        />
+        <Route
+          path="/register"
+          element={!isAuthenticated() ? <Register /> : <Navigate to="/admin/dashboard" />}
+        />
+        <Route
+          path="/forget-password"
+          element={!isAuthenticated() ? <ForgetPassword /> : <Navigate to="/admin/dashboard" />}
+        />
 
-          <Route path="/admin/services" element={<AdminServices />} />
-          <Route path="/admin/service/create" element={<AdminServiceForm />} />
-          <Route path="/admin/service/edit/:id" element={<AdminServiceEdit />} />
 
-          <Route path="/admin/users" element={<AdminUsers />} />
-          <Route path="/admin/user/create" element={<AdminUserForm />} />
-          <Route path="/admin/user/view/:id" element={<AdminUserView />} />
-          <Route path="/admin/user/edit/:id" element={<AdminUserEdit />} />
+          {/* Protected Admin Routes */}
+          <Route path="/admin/dashboard" element={<ProtectedRoute element={<AdminDashboard />} />} />
+          <Route path="/admin/settings" element={<ProtectedRoute element={<AdminSettings />} />} />
 
-          <Route path="/admin/clubs" element={<AdminClubs />} />
-          <Route path="/admin/club/create" element={<AdminClubForm />} />
-          <Route path="/admin/club/view/:id" element={<AdminClubView />} />
-          <Route path="/admin/club/edit/:id" element={<AdminClubEdit />} />
+          <Route path="/admin/subscriptions" element={<ProtectedRoute element={<AdminSubscriptions />} />} />
+          <Route path="/admin/subscription/create" element={<ProtectedRoute element={<AdminSubscriptionForm />} />} />
+          <Route path="/admin/subscription/edit/:id" element={<ProtectedRoute element={<AdminSubscriptionEdit />} />} />
 
-          <Route path="/admin/posts" element={<AdminPosts />} />
-          <Route path="/admin/post/create" element={<AdminPostForm />} />
-          <Route path="/admin/post/view/:id" element={<AdminPostDetail />} />
-          <Route path="/admin/post/edit/:id" element={<AdminPostEditForm />} />
-          <Route path="/admin/post/applicants/:id" element={<AdminPostApplicant />} />
-          <Route path="/admin/post/applicant/view/:id" element={<AdminUserView />} />
+          <Route path="/admin/services" element={<ProtectedRoute element={<AdminServices />} />} />
+          <Route path="/admin/service/create" element={<ProtectedRoute element={<AdminServiceForm />} />} />
+          <Route path="/admin/service/edit/:id" element={<ProtectedRoute element={<AdminServiceEdit />} />} />
 
-          <Route path="/admin/transaction-history" element={<TransactionHistory />} />
-         
-          <Route path="/admin/logout" element={<AdminLogout />} />
+          <Route path="/admin/users" element={<ProtectedRoute element={<AdminUsers />} />} />
+          <Route path="/admin/user/create" element={<ProtectedRoute element={<AdminUserForm />} />} />
+          <Route path="/admin/user/view/:id" element={<ProtectedRoute element={<AdminUserView />} />} />
+          <Route path="/admin/user/edit/:id" element={<ProtectedRoute element={<AdminUserEdit />} />} />
+
+          <Route path="/admin/clubs" element={<ProtectedRoute element={<AdminClubs />} />} />
+          <Route path="/admin/club/create" element={<ProtectedRoute element={<AdminClubForm />} />} />
+          <Route path="/admin/club/view/:id" element={<ProtectedRoute element={<AdminClubView />} />} />
+          <Route path="/admin/club/edit/:id" element={<ProtectedRoute element={<AdminClubEdit />} />} />
+
+          <Route path="/admin/posts" element={<ProtectedRoute element={<AdminPosts />} />} />
+          <Route path="/admin/post/create" element={<ProtectedRoute element={<AdminPostForm />} />} />
+          <Route path="/admin/post/view/:id" element={<ProtectedRoute element={<AdminPostDetail />} />} />
+          <Route path="/admin/post/edit/:id" element={<ProtectedRoute element={<AdminPostEditForm />} />} />
+          <Route path="/admin/post/applicants/:id" element={<ProtectedRoute element={<AdminPostApplicant />} />} />
+          <Route path="/admin/post/applicant/view/:id" element={<ProtectedRoute element={<AdminUserView />} />} />
+
+          <Route path="/admin/transaction-history" element={<ProtectedRoute element={<TransactionHistory />} />} />
+
+          <Route path="/admin/logout" element={<ProtectedRoute element={<AdminLogout />} />} />
         </Routes>
       </DynamicWrapper>
     </Router>
