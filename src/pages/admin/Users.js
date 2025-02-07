@@ -1,45 +1,50 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Sidebar from "../../components/admin/Sidebar";
 import DataTable from "react-data-table-component";
-import {Link, useNavigate } from "react-router-dom";
-
+import { Link, useNavigate } from "react-router-dom";
+import API from "../../api";
 const Users = () => {
   const navigate = useNavigate();
 
-  const initialUsers = [
-    {
-      id: 1,
-      firstName: "John",
-      lastName: "Doe",
-      phone: "+1 234 567 890",
-      email: "johndoe@example.com",
-      profilePic: "/common/man.png",
-      cv: "/common/johndoe-cv.pdf",
-      status: "Active",
-    },
-    {
-      id: 2,
-      firstName: "Jane",
-      lastName: "Smith",
-      phone: "+1 234 567 891",
-      email: "janesmith@example.com",
-      profilePic: "/common/man.png",
-      cv: "/common/janesmith-cv.pdf",
-      status: "Deactivate",
-    },
-    {
-      id: 3,
-      firstName: "Mark",
-      lastName: "Johnson",
-      phone: "+1 234 567 892",
-      email: "markjohnson@example.com",
-      profilePic: "/common/man.png",
-      cv: "/common/markjohnson-cv.pdf",
-      status: "Active",
-    },
-  ];
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState([]);
+  const [originalData, setOriginalData] = useState([]);
 
-  const [data, setData] = useState(initialUsers);
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await API.get("/admin/users");
+
+        // Ensure the response is an array
+        if (!Array.isArray(response.data)) {
+          throw new Error("Invalid response format");
+        }
+
+        const usersFromAPI = response.data.map((user) => ({
+          id: user._id || "",
+          firstName: user.first_name || "N/A",
+          lastName: user.last_name || "N/A",
+          phone: user.phone || "N/A",
+          email: user.email || "N/A",
+          profilePic: user.profile || "/common/man.png",
+          cv: user.upload_cv || "#",
+          status: user.isActive ? "Active" : "Deactivate",
+        }));
+
+        setData(usersFromAPI);
+        setOriginalData(usersFromAPI);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+        setError(error.response?.data?.message || "Failed to fetch users");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
   const [searchTerm, setSearchTerm] = useState("");
 
   // State to manage dropdown visibility
@@ -47,35 +52,67 @@ const Users = () => {
   const dropdownRef = useRef(null);
 
   // Handle Delete User (e.g., delete from API or state)
-  const handleDeleteUser = (userId) => {
+  const handleDeleteUser = async (userId) => {
     const isConfirmed = window.confirm(
       "Are you sure you want to delete this user?"
     );
     if (isConfirmed) {
-      setData(data.filter((user) => user.id !== userId));
-      alert("User deleted successfully!");
+      try {
+        await API.delete(`/admin/users/${userId}`);
+        setData((prevUsers) => prevUsers.filter((user) => user.id !== userId));
+        alert("User deleted successfully!");
+        // Re-fetch users after deletion
+        
+      } catch (error) {
+        console.error("Error deleting user:", error);
+        alert("Failed to delete user.");
+      }
     }
   };
 
   const handleSearch = (e) => {
     const value = e.target.value.toLowerCase();
     setSearchTerm(value);
-    const filtered = initialUsers.filter(
-      (user) =>
-        user.firstName.toLowerCase().includes(value) ||
-        user.lastName.toLowerCase().includes(value) ||
-        user.email.toLowerCase().includes(value)
-    );
-    setData(filtered);
+    if (value === "") {
+      setData(originalData);
+    } else {
+      const filtered = originalData.filter(
+        (user) =>
+          user.firstName.toLowerCase().includes(value) ||
+          user.lastName.toLowerCase().includes(value) ||
+          user.email.toLowerCase().includes(value)
+      );
+      setData(filtered);
+    }
   };
 
-  const handleStatusChange = (userId, newStatus) => {
-    const updatedData = data.map((user) =>
-      user.id === userId ? { ...user, status: newStatus } : user
-    );
-    setData(updatedData);
+  const handleStatusChange = async (userId, newStatus) => {
+    try {
+      const formData = new FormData();
+      formData.append("status", newStatus); // Ensure correct field name expected by API
+  
+      await API.put(`/admin/users/${userId}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+  
+      // Update state after successful API response
+      setData((prevUsers) =>
+        prevUsers.map((user) =>
+          user._id === userId ? { ...user, isActive: newStatus } : user
+        )
+      );
+  
+      alert("User status updated successfully!");
+    } catch (error) {
+      console.error("Error updating user status:", error);
+      alert("Failed to update user status.");
+    }
   };
-
+  
+  
+  
   const columns = [
     {
       name: "Profile",
@@ -138,8 +175,8 @@ const Users = () => {
           onChange={(e) => handleStatusChange(row.id, e.target.value)}
           className="px-3 py-1 border rounded-md"
         >
-          <option value="Active">Active</option>
-          <option value="Deactivate">Deactivate</option>
+          <option value="true">Active</option>
+          <option value="false">Deactivate</option>
         </select>
       ),
     },
@@ -199,16 +236,7 @@ const Users = () => {
                     <i className="fas fa-trash-alt mr-2"></i> Delete User
                   </button>
                 </li>
-
-                {/* Applicants Option */}
-                {/* <li>
-                    <button
-                      onClick={() => navigate(`/admin/user/applicants/${row.id}`)}
-                      className="w-full text-left py-2 px-4 hover:bg-gray-200 transition duration-300"
-                    >
-                      <i className="fas fa-users mr-2"></i> Applicants
-                    </button>
-                  </li> */}
+                
               </ul>
             </div>
           )}
@@ -274,56 +302,64 @@ const Users = () => {
       <div className="flex flex-col lg:flex-row">
         <Sidebar />
         <div className="overflow-x-auto">
-        <main className="flex-1 p-6 space-y-6">
-          <header className="flex justify-between items-center flex-wrap gap-4">
-            <h1 className="text-3xl font-bold text-gray-800">All Users</h1>
-            <Link
-              to={"/admin/user/create"}
-              className="py-2 px-6 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
-            >
-              Add New &#43;
-            </Link>
-          </header>
+          <main className="flex-1 p-6 space-y-6">
+            <header className="flex justify-between items-center flex-wrap gap-4">
+              <h1 className="text-3xl font-bold text-gray-800">All Users</h1>
+              <Link
+                to={"/admin/user/create"}
+                className="py-2 px-6 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+              >
+                Add New &#43;
+              </Link>
+            </header>
 
-          <div className="bg-white p-6 rounded shadow">
-            <div className="flex flex-col sm:flex-row justify-between items-center mb-4">
-              <h2 className="text-xl font-medium text-gray-800">Users List</h2>
-              <div className="relative mt-2 sm:mt-0 w-full sm:w-auto">
-                <input
-                  type="text"
-                  placeholder="Search by name or email..."
-                  value={searchTerm}
-                  onChange={handleSearch}
-                  className="w-full p-3 pl-10 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-4.35-4.35M16.5 10.5a6 6 0 11-12 0 6 6 0 0112 0z"
+            <div className="bg-white p-6 rounded shadow">
+              <div className="flex flex-col sm:flex-row justify-between items-center mb-4">
+                <h2 className="text-xl font-medium text-gray-800">
+                  Users List
+                </h2>
+                <div className="relative mt-2 sm:mt-0 w-full sm:w-auto">
+                  <input
+                    type="text"
+                    placeholder="Search by name or email..."
+                    value={searchTerm}
+                    onChange={handleSearch}
+                    className="w-full p-3 pl-10 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
-                </svg>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-4.35-4.35M16.5 10.5a6 6 0 11-12 0 6 6 0 0112 0z"
+                    />
+                  </svg>
+                </div>
               </div>
+              {loading ? (
+                <p>Loading users...</p>
+              ) : error ? (
+                <p className="text-red-500">{error}</p>
+              ) : (
+                <div className="overflow-auto">
+                <DataTable
+                  columns={columns}
+                  data={data}
+                  pagination
+                  highlightOnHover
+                  striped
+                  responsive
+                  customStyles={customStyles}
+                /></div>
+              )}
             </div>
-
-            <DataTable
-              columns={columns}
-              data={data}
-              pagination
-              highlightOnHover
-              striped
-              responsive
-              customStyles={customStyles}
-            />
-          </div>
-        </main>
+          </main>
         </div>
       </div>
     </div>

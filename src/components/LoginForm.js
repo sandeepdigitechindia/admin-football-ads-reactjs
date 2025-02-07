@@ -8,10 +8,11 @@ const LoginForm = () => {
     password: "",
   });
 
-  const navigate = useNavigate();
+  
   const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false); // Loading state
-  const [apiError, setApiError] = useState(null); // API error state
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false); 
+  const [apiError, setApiError] = useState(null); 
 
   const validate = () => {
     const newErrors = {};
@@ -48,7 +49,6 @@ const LoginForm = () => {
 
     setLoading(true);
     setApiError(null);
-    console.log("Base URL:", BASE_URL);
     
     try {
       const response = await axios.post(

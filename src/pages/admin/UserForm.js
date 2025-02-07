@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import Sidebar from "../../components/admin/Sidebar";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import API from "../../api";
+const BASE_URL = process.env.REACT_APP_BASE_URL;
 const countries = [
   "United States",
   "India",
@@ -20,10 +22,12 @@ const UserForm = () => {
     role: "",
     password: "",
     confirmPassword: "",
-   
   });
 
   const [errors, setErrors] = useState({});
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [apiError, setApiError] = useState(null);
 
   const validate = () => {
     const newErrors = {};
@@ -90,8 +94,6 @@ const UserForm = () => {
       newErrors.confirmPassword = "Passwords do not match.";
     }
 
-  
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -103,11 +105,26 @@ const UserForm = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validate()) {
-      console.log("Form Submitted:", formData);
-      alert("Registration successful!");
+
+    if (!validate()) return;
+
+    setLoading(true);
+    setApiError(null);
+
+    try {
+      await API.post(`${BASE_URL}/admin/users`, {
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        email: formData.email,
+        phone: formData.phone,
+        dob: formData.dob,
+        country: formData.country,
+        role: formData.role,
+        password: formData.password,
+      });
+      navigate("/admin/users");
       setFormData({
         firstName: "",
         lastName: "",
@@ -118,9 +135,12 @@ const UserForm = () => {
         role: "",
         password: "",
         confirmPassword: "",
-       
       });
       setErrors({});
+    } catch (error) {
+      setApiError(error.response?.data?.message || "User Create failed. Try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -145,7 +165,7 @@ const UserForm = () => {
             <h1 className="text-2xl font-bold text-gray-800 mb-6">
               Create User
             </h1>
-
+            {apiError && <p style={{ color: "red" }}>{apiError}</p>}
             <form onSubmit={handleSubmit} noValidate>
               {/* Name Fields (First Name and Last Name) */}
               <div className="flex space-x-4 mb-4">
@@ -384,14 +404,14 @@ const UserForm = () => {
                 )}
               </div>
 
-
               {/* Submit Button */}
               <div>
                 <button
                   type="submit"
                   className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition duration-300"
+                  disabled={loading}
                 >
-                  Register
+                  {loading ? "Register..." : "Register"}
                 </button>
               </div>
             </form>
