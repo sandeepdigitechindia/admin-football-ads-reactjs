@@ -8,7 +8,7 @@ const countries = [
   "Australia",
   "United Kingdom",
 ];
-const roles = ["Player", "Coach", "Agent", "Club"];
+const roles = ["player", "coach", "agent", "club"];
 const AdminClubEdit = () => {
   const [formData, setFormData] = useState({
     club_name: "",
@@ -17,7 +17,6 @@ const AdminClubEdit = () => {
     lastName: "",
     email: "",
     phone: "",
-   
     country: "",
     role: "",
     password: "",
@@ -118,7 +117,6 @@ const AdminClubEdit = () => {
         lastName: "",
         email: "",
         phone: "",
-       
         country: "",
         role: "",
         password: "",

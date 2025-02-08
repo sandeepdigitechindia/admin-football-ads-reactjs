@@ -1,16 +1,47 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "../../components/admin/Sidebar";
-import { Link } from "react-router-dom";
+import { Link, useParams,useNavigate } from "react-router-dom";
+import API from "../../api";
 
 const AdminClubView = () => {
+  const { id } = useParams();
+    const navigate = useNavigate();
+    const [formData, setFormData] = useState({
+      club_name:"",
+      club_logo:"",
+        first_name: "",
+        last_name: "",
+        email: "",
+        phone: "",
+        dob: "",
+        country: "",
+        role: "",
+        password: "",
+      });
+
+      // Fetch club data from API
+  useEffect(() => {
+    const fetchClub = async () => {
+      try {
+        const response = await API.get(`/admin/users/${id}`);
+        setFormData(response.data);
+      } catch (error) {
+        console.error("Error fetching Club data:", error);
+      }
+    };
+
+    if (id) fetchClub();
+  }, [id]);
   // Static data to replace `selectedRow`
   const selectedRow = {
-    profilePic: "/common/man.png",
-    firstName: "John",
-    lastName: "Doe",
-    email: "johndoe@example.com",
-    phone: "+1234567890",
-    country: "USA",
+    clubName: formData.club_name || "N/A",
+    clubLogo: formData.club_logo || "/common/club.png",
+    profilePic: formData.profile || "/common/man.png",
+    firstName: formData.first_name,
+    lastName: formData.last_name,
+    email: formData.email,
+    phone: formData.phone,
+    country: formData.country,
     title: "Software Engineer",
     description:
       "An experienced software engineer skilled in React and Node.js.",
@@ -44,6 +75,22 @@ const AdminClubView = () => {
     ],
   };
 
+  const handleDeleteClub = async (clubId) => {
+      const isConfirmed = window.confirm(
+        "Are you sure you want to delete this club?"
+      );
+      if (isConfirmed) {
+        try {
+          await API.delete(`/admin/users/${clubId}`);
+          alert("Club deleted successfully!");
+          navigate("/admin/clubs");
+        } catch (error) {
+          console.error("Error deleting club:", error);
+          alert("Failed to delete club.");
+        }
+      }
+    };
+
   return (
     <div className="flex bg-gray-100">
       {/* Sidebar */}
@@ -57,14 +104,14 @@ const AdminClubView = () => {
           </h1>
           <div>
             <Link
-              to={"/admin/club/edit/1"}
+              to={`/admin/club/edit/${id}`}
               className="py-2 px-6 mx-2 bg-green-500 text-white rounded hover:bg-green-600 transition"
             >
               &#9998; Edit
             </Link>
 
             <Link
-              to={"/admin/clubs"}
+              onClick={() => handleDeleteClub(id)}
               className="py-2 px-6 bg-red-500 text-white rounded hover:bg-red-600 transition"
             >
               &#10539; Delete
@@ -89,6 +136,18 @@ const AdminClubView = () => {
                 <div className="p-4">
                   <table className="w-full text-left text-gray-700">
                     <tbody>
+                    <tr>
+                        <td className="font-semibold py-2">Club Name:</td>
+                        <td>{selectedRow.clubName}</td>
+                      </tr>
+                      <tr>
+                        <td className="font-semibold py-2">Club Logo:</td>
+                        <td><img
+                          src={selectedRow.clubLogo}
+                          alt={`${selectedRow.clubName}`}
+                          className="w-12 h-12 rounded-full"
+                        /></td>
+                      </tr>
                       <tr>
                         <td className="font-semibold py-2">First Name:</td>
                         <td>{selectedRow.firstName}</td>
@@ -129,7 +188,7 @@ const AdminClubView = () => {
                   </h4>
                 </div>
 
-                {/* Jobs Applied by User */}
+                {/* Jobs Applied by Club */}
                 <div className="p-4">
                   <h5 className="text-lg font-semibold text-gray-800 mb-2">
                     Jobs Applied:

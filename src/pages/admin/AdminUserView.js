@@ -1,17 +1,42 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "../../components/admin/Sidebar";
-import { Link } from "react-router-dom";
-
+import { Link, useParams,useNavigate } from "react-router-dom";
+import API from "../../api";
 const AdminUserView = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    first_name: "",
+    last_name: "",
+    email: "",
+    phone: "",
+    dob: "",
+    country: "",
+    role: "",
+    password: "",
+  });
+  // Fetch user data from API
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await API.get(`/admin/users/${id}`);
+        setFormData(response.data);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    if (id) fetchUser();
+  }, [id]);
   // Static data to replace `selectedRow`
   const selectedRow = {
     profilePic: "/common/man.png",
-    firstName: "John",
-    lastName: "Doe",
-    email: "johndoe@example.com",
-    phone: "+1234567890",
-    dob: "1990-01-01",
-    country: "USA",
+    firstName: formData.first_name,
+    lastName: formData.last_name,
+    email: formData.email,
+    phone: formData.phone,
+    dob: formData.dob,
+    country: formData.country,
     cv: "https://example.com/johndoe-cv.pdf",
     title: "Software Engineer",
     description:
@@ -46,6 +71,22 @@ const AdminUserView = () => {
     ],
   };
 
+    const handleDeleteUser = async (userId) => {
+      const isConfirmed = window.confirm(
+        "Are you sure you want to delete this user?"
+      );
+      if (isConfirmed) {
+        try {
+          await API.delete(`/admin/users/${userId}`);
+          alert("User deleted successfully!");
+          navigate("/admin/users");
+        } catch (error) {
+          console.error("Error deleting user:", error);
+          alert("Failed to delete user.");
+        }
+      }
+    };
+
   return (
     <div className="flex bg-gray-100">
       {/* Sidebar */}
@@ -59,14 +100,14 @@ const AdminUserView = () => {
           </h1>
           <div>
             <Link
-              to={"/admin/user/edit/1"}
+              to={`/admin/user/edit/${id}`}
               className="py-2 px-6 mx-2 bg-green-500 text-white rounded hover:bg-green-600 transition"
             >
               &#9998; Edit
             </Link>
 
             <Link
-              to={"/admin/users"}
+              onClick={() => handleDeleteUser(id)}
               className="py-2 px-6 bg-red-500 text-white rounded hover:bg-red-600 transition"
             >
               &#10539; Delete

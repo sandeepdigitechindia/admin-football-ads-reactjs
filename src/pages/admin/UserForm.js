@@ -10,7 +10,7 @@ const countries = [
   "Australia",
   "United Kingdom",
 ];
-const roles = ["Player", "Coach", "Agent", "Club"];
+const roles = ["player", "coach", "agent", "club"];
 const UserForm = () => {
   const [formData, setFormData] = useState({
     firstName: "",

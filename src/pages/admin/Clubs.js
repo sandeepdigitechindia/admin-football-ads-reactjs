@@ -1,85 +1,115 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Sidebar from "../../components/admin/Sidebar";
 import DataTable from "react-data-table-component";
 import { Link, useNavigate } from "react-router-dom";
+import API from "../../api";
 
 const Clubs = () => {
   const navigate = useNavigate();
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState([]);
+  const [originalData, setOriginalData] = useState([]);
 
-  const initialClubs = [
-    {
-      id: 1,
-      clubName: "Soccer Club",
-      clubLogo: "/common/club.png",
-      firstName: "John",
-      lastName: "Doe",
-      phone: "+1 234 567 890",
-      email: "johndoe@example.com",
-      profilePic: "/common/man.png",
-      status: "Active",
-    },
-    {
-      id: 2,
-      clubName: "Soccer Club",
-      clubLogo: "/common/club.png",
-      firstName: "Jane",
-      lastName: "Smith",
-      phone: "+1 234 567 891",
-      email: "janesmith@example.com",
-      profilePic: "/common/man.png",
+  useEffect(() => {
+    const fetchClubs = async () => {
+      try {
+        const response = await API.get("/admin/users?role=club");
 
-      status: "Deactivate",
-    },
-    {
-      id: 3,
-      clubName: "Soccer Club",
-      clubLogo: "/common/club.png",
-      firstName: "Mark",
-      lastName: "Johnson",
-      phone: "+1 234 567 892",
-      email: "markjohnson@example.com",
-      profilePic: "/common/man.png",
+        // Ensure the response is an array
+        if (!Array.isArray(response.data)) {
+          throw new Error("Invalid response format");
+        }
 
-      status: "Active",
-    },
-  ];
+        const clubsFromAPI = response.data.map((club) => ({
+          id: club._id || "",
+          clubName: club.club_name || "N/A",
+          clubLogo: club.club_logo || "/common/club.png",
+          firstName: club.first_name || "N/A",
+          lastName: club.last_name || "N/A",
+          phone: club.phone || "N/A",
+          email: club.email || "N/A",
+          profilePic: club.profile || "/common/man.png",
+          status: club.isActive ? "Active" : "Deactivate",
+        }));
 
-  const [data, setData] = useState(initialClubs);
+        setData(clubsFromAPI);
+        setOriginalData(clubsFromAPI);
+      } catch (error) {
+        console.error("Error fetching clubs:", error);
+        setError(error.response?.data?.message || "Failed to fetch clubs");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchClubs();
+  }, []);
+
   const [searchTerm, setSearchTerm] = useState("");
 
   // State to manage dropdown visibility
-    const [dropdownOpen, setDropdownOpen] = useState(null);
-    const dropdownRef = useRef(null);
-  
-    // Handle Delete Club (e.g., delete from API or state)
-    const handleDeleteClub = (clubId) => {
-      const isConfirmed = window.confirm(
-        "Are you sure you want to delete this club?"
-      );
-      if (isConfirmed) {
-        setData(data.filter((club) => club.id !== clubId));
+  const [dropdownOpen, setDropdownOpen] = useState(null);
+  const dropdownRef = useRef(null);
+
+  // Handle Delete Club (e.g., delete from API or state)
+  const handleDeleteClub = async (clubId) => {
+    const isConfirmed = window.confirm(
+      "Are you sure you want to delete this club?"
+    );
+    if (isConfirmed) {
+      try {
+        await API.delete(`/admin/users/${clubId}`);
+        setData((prevClubs) => prevClubs.filter((club) => club.id !== clubId));
         alert("Club deleted successfully!");
+      } catch (error) {
+        console.error("Error deleting club:", error);
+        alert("Failed to delete club.");
       }
-    };
-  
+    }
+  };
 
   const handleSearch = (e) => {
     const value = e.target.value.toLowerCase();
     setSearchTerm(value);
-    const filtered = initialClubs.filter(
-      (club) =>
-        club.firstName.toLowerCase().includes(value) ||
-        club.lastName.toLowerCase().includes(value) ||
-        club.email.toLowerCase().includes(value)
-    );
-    setData(filtered);
+    if (value === "") {
+      setData(originalData);
+    } else {
+      const filtered = originalData.filter(
+        (club) =>
+          club.firstName.toLowerCase().includes(value) ||
+          club.lastName.toLowerCase().includes(value) ||
+          club.email.toLowerCase().includes(value)
+      );
+      setData(filtered);
+    }
   };
 
-  const handleStatusChange = (clubId, newStatus) => {
-    const updatedData = data.map((club) =>
-      club.id === clubId ? { ...club, status: newStatus } : club
-    );
-    setData(updatedData);
+  const handleStatusChange = async (clubId, newStatus) => {
+    try {
+      const updatedStatus = newStatus === "true";
+
+      const formData = new FormData();
+      formData.append("status", updatedStatus);
+
+      await API.put(`/admin/users/${clubId}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      const updatedData = data.map((club) =>
+        club.id === clubId
+          ? { ...club, status: newStatus === "true" ? "Active" : "Deactivate" }
+          : club
+      );
+      setData(updatedData);
+
+      alert("Club status updated successfully!");
+    } catch (error) {
+      console.error("Error updating club status:", error);
+      alert("Failed to update club status.");
+    }
   };
 
   const columns = [
@@ -144,12 +174,13 @@ const Clubs = () => {
       name: "Change Status",
       cell: (row) => (
         <select
-          value={row.status}
+          value={String(row.status)}
           onChange={(e) => handleStatusChange(row.id, e.target.value)}
-          className="px-3 py-1 border rounded-md"
+          className="px-2 py-1 border rounded-md"
         >
-          <option value="Active">Active</option>
-          <option value="Deactivate">Deactivate</option>
+          <option value="">Change</option>
+          <option value="true">Active</option>
+          <option value="false">Deactivate</option>
         </select>
       ),
     },
@@ -159,12 +190,12 @@ const Clubs = () => {
         <div className="text-center relative">
           {/* Action Button */}
           <button
-            className="py-2 px-4 bg-blue-500 text-white rounded hover:bg-blue-600 transition flex items-center gap-1"
+            className="py-2 px-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition flex items-center"
             onClick={() =>
               setDropdownOpen(dropdownOpen === row.id ? null : row.id)
             } // Toggle dropdown
           >
-            <span>Action</span>
+            <span>Action</span>&nbsp;
             {/* Add a dropdown arrow icon */}
             <i
               className={`fas fa-chevron-down ${
@@ -209,16 +240,6 @@ const Clubs = () => {
                     <i className="fas fa-trash-alt mr-2"></i> Delete Club
                   </button>
                 </li>
-
-                {/* Applicants Option */}
-                {/* <li>
-                    <button
-                      onClick={() => navigate(`/admin/club/applicants/${row.id}`)}
-                      className="w-full text-left py-2 px-4 hover:bg-gray-200 transition duration-300"
-                    >
-                      <i className="fas fa-users mr-2"></i> Applicants
-                    </button>
-                  </li> */}
               </ul>
             </div>
           )}
@@ -324,17 +345,23 @@ const Clubs = () => {
                   </svg>
                 </div>
               </div>
-              <div className="overflow-x-auto">
-                <DataTable
-                  columns={columns}
-                  data={data}
-                  pagination
-                  highlightOnHover
-                  striped
-                  responsive
-                  customStyles={customStyles}
-                />
-              </div>
+              {loading ? (
+                <p>Loading clubs...</p>
+              ) : error ? (
+                <p className="text-red-500">{error}</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <DataTable
+                    columns={columns}
+                    data={data}
+                    pagination
+                    highlightOnHover
+                    striped
+                    responsive
+                    customStyles={customStyles}
+                  />
+                </div>
+              )}
             </div>
           </main>
         </div>

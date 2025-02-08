@@ -14,7 +14,7 @@ const Users = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await API.get("/admin/users");
+        const response = await API.get("/admin/users?role=player");
 
         // Ensure the response is an array
         if (!Array.isArray(response.data)) {
@@ -88,21 +88,21 @@ const Users = () => {
 
   const handleStatusChange = async (userId, newStatus) => {
     try {
+      const updatedStatus = newStatus === "true"; 
+
       const formData = new FormData();
-      formData.append("status", newStatus); // Ensure correct field name expected by API
+      formData.append("status", updatedStatus);
   
       await API.put(`/admin/users/${userId}`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
-  
-      // Update state after successful API response
-      setData((prevUsers) =>
-        prevUsers.map((user) =>
-          user._id === userId ? { ...user, isActive: newStatus } : user
-        )
+
+      const updatedData = data.map((user) =>
+        user.id === userId ? { ...user, status: newStatus==="true"?"Active":"Deactivate"} : user
       );
+      setData(updatedData);
   
       alert("User status updated successfully!");
     } catch (error) {
@@ -110,7 +110,6 @@ const Users = () => {
       alert("Failed to update user status.");
     }
   };
-  
   
   
   const columns = [
@@ -171,27 +170,29 @@ const Users = () => {
       name: "Change Status",
       cell: (row) => (
         <select
-          value={row.status}
+          value={String(row.status)} 
           onChange={(e) => handleStatusChange(row.id, e.target.value)}
           className="px-3 py-1 border rounded-md"
         >
+          <option value="">Change</option>
           <option value="true">Active</option>
           <option value="false">Deactivate</option>
         </select>
       ),
     },
+    
     {
       name: "Action",
       cell: (row) => (
         <div className="text-center relative">
           {/* Action Button */}
           <button
-            className="py-2 px-4 bg-blue-500 text-white rounded hover:bg-blue-600 transition flex items-center gap-2"
+            className="py-2 px-4 bg-blue-500 text-white rounded hover:bg-blue-600 transition flex items-center"
             onClick={() =>
               setDropdownOpen(dropdownOpen === row.id ? null : row.id)
             } // Toggle dropdown
           >
-            <span>Action</span>
+            <span>Action</span>&nbsp;
             {/* Add a dropdown arrow icon */}
             <i
               className={`fas fa-chevron-down ${
@@ -347,7 +348,7 @@ const Users = () => {
               ) : error ? (
                 <p className="text-red-500">{error}</p>
               ) : (
-                <div className="overflow-auto">
+                <div className="overflow-x-auto">
                 <DataTable
                   columns={columns}
                   data={data}

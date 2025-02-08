@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import Sidebar from "../../components/admin/Sidebar";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import API from "../../api";
+const BASE_URL = process.env.REACT_APP_BASE_URL;
 const countries = [
   "United States",
   "India",
@@ -8,7 +10,7 @@ const countries = [
   "Australia",
   "United Kingdom",
 ];
-const roles = ["Player", "Coach", "Agent", "Club"];
+const roles = ["coach", "agent", "club"];
 const ClubForm = () => {
   const [formData, setFormData] = useState({
     club_name: "",
@@ -17,26 +19,23 @@ const ClubForm = () => {
     lastName: "",
     email: "",
     phone: "",
-   
     country: "",
     role: "",
     password: "",
     confirmPassword: "",
-   
   });
 
   const [errors, setErrors] = useState({});
-
+const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [apiError, setApiError] = useState(null);
   const validate = () => {
     const newErrors = {};
 
     if (!formData.club_name.trim()) {
       newErrors.club_name = "Club Name is required.";
     }
-    if (!formData.club_logo) {
-      newErrors.club_logo = "Club Logo is required.";
-    }
-
+  
     // first Name validation
     if (!formData.firstName.trim()) {
       newErrors.firstName = "First Name is required.";
@@ -106,11 +105,27 @@ const ClubForm = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validate()) {
-      console.log("Form Submitted:", formData);
-      alert("Registration successful!");
+
+    if (!validate()) return;
+
+    setLoading(true);
+    setApiError(null);
+
+    try {
+      await API.post(`${BASE_URL}/admin/users`, {
+        club_name: formData.club_name,
+        club_logo: formData.club_logo,
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        email: formData.email,
+        phone: formData.phone,
+        country: formData.country,
+        role: formData.role,
+        password: formData.password,
+      });
+      navigate("/admin/users");
       setFormData({
         club_name: "",
         club_logo: null,
@@ -118,15 +133,19 @@ const ClubForm = () => {
         lastName: "",
         email: "",
         phone: "",
-       
+        dob: "",
         country: "",
         role: "",
         password: "",
         confirmPassword: "",
-        
       });
       setErrors({});
+    } catch (error) {
+      setApiError(error.response?.data?.message || "User Create failed. Try again.");
+    } finally {
+      setLoading(false);
     }
+
   };
 
   return (
@@ -150,7 +169,7 @@ const ClubForm = () => {
             <h1 className="text-2xl font-bold text-gray-800 mb-6">
               Create Club
             </h1>
-
+            {apiError && <p style={{ color: "red" }}>{apiError}</p>}
             <form onSubmit={handleSubmit} noValidate>
 
               {/* Club Name Field */}
@@ -419,8 +438,9 @@ const ClubForm = () => {
                 <button
                   type="submit"
                   className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition duration-300"
+                  disabled={loading}
                 >
-                  Register
+                  {loading ? "Register..." : "Register"}
                 </button>
               </div>
             </form>
