@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 const LoginForm = () => {
@@ -8,11 +10,9 @@ const LoginForm = () => {
     password: "",
   });
 
-  
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false); 
-  const [apiError, setApiError] = useState(null); 
+  const [loading, setLoading] = useState(false);
 
   const validate = () => {
     const newErrors = {};
@@ -48,20 +48,22 @@ const LoginForm = () => {
     if (!validate()) return;
 
     setLoading(true);
-    setApiError(null);
-    
+
     try {
-      const response = await axios.post(
-        `${BASE_URL}/admin/login`,
-        formData
-      );
-      localStorage.setItem("token", response.data.token); 
+      const response = await axios.post(`${BASE_URL}/api/admin/login`, formData);
+      localStorage.setItem("token", response.data.token);
       navigate("/admin/dashboard");
-      alert("Login successful!");
+      toast.success("Login successful!", {
+        position: "top-right",
+        autoClose: 3000,
+      });
       setFormData({ email: "", password: "" });
       setErrors({});
     } catch (error) {
-      setApiError(error.response?.data?.message || "Login failed. Try again.");
+      toast.error(error.response?.data?.message || "Login failed. Try again.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
     } finally {
       setLoading(false);
     }
@@ -78,7 +80,7 @@ const LoginForm = () => {
             settings.
           </p>
           <img
-            src="/about/login.jpg" // Replace with your image path
+            src="/about/login.jpg"
             alt="Login Illustration"
             className="mt-4 rounded-lg w-full object-cover"
           />
@@ -89,7 +91,6 @@ const LoginForm = () => {
           <h2 className="text-2xl text-blue-600 font-bold text-center mb-6">
             Admin Login
           </h2>
-          {apiError && <p style={{ color: "red" }}>{apiError}</p>}
 
           <form onSubmit={handleSubmit} noValidate>
             {/* Email Field */}
@@ -140,13 +141,6 @@ const LoginForm = () => {
               )}
             </div>
 
-            {/* Accept Terms Checkbox */}
-            {/* <div className="mb-6">
-              <Link to="/forget-password" className="text-blue-600">
-                Forgot Password?
-              </Link>
-            </div> */}
-
             {/* Submit Button */}
             <div>
               <button
@@ -158,14 +152,6 @@ const LoginForm = () => {
               </button>
             </div>
           </form>
-
-          {/* <p className="text-center mt-2">
-            Don't have an account? &nbsp;
-            <Link to="/register" className="text-blue-600">
-              Sign Up
-            </Link>
-          </p> */}
-        
         </div>
       </div>
     </div>

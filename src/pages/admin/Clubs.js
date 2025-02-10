@@ -2,7 +2,11 @@ import React, { useState, useEffect, useRef } from "react";
 import Sidebar from "../../components/admin/Sidebar";
 import DataTable from "react-data-table-component";
 import { Link, useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import API from "../../api";
+const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 const Clubs = () => {
   const navigate = useNavigate();
@@ -14,7 +18,7 @@ const Clubs = () => {
   useEffect(() => {
     const fetchClubs = async () => {
       try {
-        const response = await API.get("/admin/users?role=club");
+        const response = await API.get("/api/admin/users?role=club");
 
         // Ensure the response is an array
         if (!Array.isArray(response.data)) {
@@ -24,7 +28,7 @@ const Clubs = () => {
         const clubsFromAPI = response.data.map((club) => ({
           id: club._id || "",
           clubName: club.club_name || "N/A",
-          clubLogo: club.club_logo || "/common/club.png",
+          clubLogo: BASE_URL+club.club_logo || "/common/club.png",
           firstName: club.first_name || "N/A",
           lastName: club.last_name || "N/A",
           phone: club.phone || "N/A",
@@ -54,19 +58,28 @@ const Clubs = () => {
 
   // Handle Delete Club (e.g., delete from API or state)
   const handleDeleteClub = async (clubId) => {
-    const isConfirmed = window.confirm(
-      "Are you sure you want to delete this club?"
-    );
-    if (isConfirmed) {
-      try {
-        await API.delete(`/admin/users/${clubId}`);
-        setData((prevClubs) => prevClubs.filter((club) => club.id !== clubId));
-        alert("Club deleted successfully!");
-      } catch (error) {
-        console.error("Error deleting club:", error);
-        alert("Failed to delete club.");
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await API.delete(`/api/admin/users/${clubId}`);
+          setData((prevClubs) =>
+            prevClubs.filter((club) => club.id !== clubId)
+          );
+          Swal.fire("Deleted!", "Club has been deleted.", "success");
+        } catch (error) {
+          console.error("Error deleting club:", error);
+          Swal.fire("Error!", "Failed to delete club. Try again.", "error");
+        }
       }
-    }
+    });
   };
 
   const handleSearch = (e) => {
@@ -92,7 +105,7 @@ const Clubs = () => {
       const formData = new FormData();
       formData.append("status", updatedStatus);
 
-      await API.put(`/admin/users/${clubId}`, formData, {
+      await API.put(`/api/admin/users/${clubId}`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -104,11 +117,19 @@ const Clubs = () => {
           : club
       );
       setData(updatedData);
-
-      alert("Club status updated successfully!");
+      toast.success("Club status updated successfully!", {
+        position: "top-right",
+        autoClose: 3000,
+      });
     } catch (error) {
-      console.error("Error updating club status:", error);
-      alert("Failed to update club status.");
+      toast.error(
+        error.response?.data?.message ||
+          "Failed to update club status. Try again.",
+        {
+          position: "top-right",
+          autoClose: 3000,
+        }
+      );
     }
   };
 

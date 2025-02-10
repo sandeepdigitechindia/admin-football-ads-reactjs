@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "../../components/admin/Sidebar";
 import { Link, useParams, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import API from "../../api";
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 const countries = [
@@ -27,12 +29,12 @@ const AdminUserEdit = () => {
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [apiError, setApiError] = useState(null);
+
   // Fetch user data from API
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await API.get(`/admin/users/${id}`);
+        const response = await API.get(`/api/admin/users/${id}`);
         setFormData(response.data);
       } catch (error) {
         console.error("Error fetching user data:", error);
@@ -88,7 +90,6 @@ const AdminUserEdit = () => {
       newErrors.role = "Please select a role.";
     }
 
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -105,7 +106,6 @@ const AdminUserEdit = () => {
     if (!validate()) return;
 
     setLoading(true);
-    setApiError(null);
 
     try {
       const updatedData = {
@@ -117,21 +117,30 @@ const AdminUserEdit = () => {
         country: formData.country,
         role: formData.role,
       };
-    
+
       // Only include password if it's not empty
       if (formData.password.trim() !== "") {
         updatedData.password = formData.password;
       }
-    
-      await API.put(`${BASE_URL}/admin/users/${id}`, updatedData);
+
+      await API.put(`${BASE_URL}/api/admin/users/${id}`, updatedData);
       navigate("/admin/users");
+      toast.success("User Updated Successfully!", {
+        position: "top-right",
+        autoClose: 3000,
+      });
       setErrors({});
     } catch (error) {
-      setApiError(error.response?.data?.message || "User Edit failed. Try again.");
+      toast.error(
+        error.response?.data?.message || "User Update failed. Try again.",
+        {
+          position: "top-right",
+          autoClose: 3000,
+        }
+      );
     } finally {
       setLoading(false);
     }
-    
   };
 
   return (
@@ -153,7 +162,7 @@ const AdminUserEdit = () => {
           </header>
           <div className="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow">
             <h1 className="text-2xl font-bold text-gray-800 mb-6">Edit User</h1>
-            {apiError && <p style={{ color: "red" }}>{apiError}</p>}
+
             <form onSubmit={handleSubmit} noValidate>
               {/* Name Fields (First Name and Last Name) */}
               <div className="flex space-x-4 mb-4">
@@ -346,7 +355,7 @@ const AdminUserEdit = () => {
                   htmlFor="password"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Password <span className="text-red-500">*</span>
+                  Password 
                 </label>
                 <input
                   type="password"

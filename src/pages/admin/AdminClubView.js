@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "../../components/admin/Sidebar";
 import { Link, useParams,useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 import API from "../../api";
 
 const AdminClubView = () => {
@@ -23,7 +24,7 @@ const AdminClubView = () => {
   useEffect(() => {
     const fetchClub = async () => {
       try {
-        const response = await API.get(`/admin/users/${id}`);
+        const response = await API.get(`/api/admin/users/${id}`);
         setFormData(response.data);
       } catch (error) {
         console.error("Error fetching Club data:", error);
@@ -75,21 +76,28 @@ const AdminClubView = () => {
     ],
   };
 
-  const handleDeleteClub = async (clubId) => {
-      const isConfirmed = window.confirm(
-        "Are you sure you want to delete this club?"
-      );
-      if (isConfirmed) {
+  const handleDeleteClub = async (userId) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
         try {
-          await API.delete(`/admin/users/${clubId}`);
-          alert("Club deleted successfully!");
+          await API.delete(`/api/admin/users/${userId}`);
+          Swal.fire("Deleted!", "User has been deleted.", "success");
           navigate("/admin/clubs");
         } catch (error) {
-          console.error("Error deleting club:", error);
-          alert("Failed to delete club.");
+          console.error("Error deleting user:", error);
+          Swal.fire("Error!", "Failed to delete user. Try again.", "error");
         }
       }
-    };
+    });
+  };
 
   return (
     <div className="flex bg-gray-100">

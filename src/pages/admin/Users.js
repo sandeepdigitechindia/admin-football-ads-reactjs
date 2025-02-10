@@ -2,6 +2,9 @@ import React, { useState, useEffect, useRef } from "react";
 import Sidebar from "../../components/admin/Sidebar";
 import DataTable from "react-data-table-component";
 import { Link, useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import API from "../../api";
 const Users = () => {
   const navigate = useNavigate();
@@ -14,7 +17,7 @@ const Users = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await API.get("/admin/users?role=player");
+        const response = await API.get("/api/admin/users?role=player");
 
         // Ensure the response is an array
         if (!Array.isArray(response.data)) {
@@ -53,21 +56,29 @@ const Users = () => {
 
   // Handle Delete User (e.g., delete from API or state)
   const handleDeleteUser = async (userId) => {
-    const isConfirmed = window.confirm(
-      "Are you sure you want to delete this user?"
-    );
-    if (isConfirmed) {
-      try {
-        await API.delete(`/admin/users/${userId}`);
-        setData((prevUsers) => prevUsers.filter((user) => user.id !== userId));
-        alert("User deleted successfully!");
-        // Re-fetch users after deletion
-        
-      } catch (error) {
-        console.error("Error deleting user:", error);
-        alert("Failed to delete user.");
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await API.delete(`/api/admin/users/${userId}`);
+          setData((prevUsers) =>
+            prevUsers.filter((user) => user.id !== userId)
+          );
+
+          Swal.fire("Deleted!", "User has been deleted.", "success");
+        } catch (error) {
+          console.error("Error deleting user:", error);
+          Swal.fire("Error!", "Failed to delete user. Try again.", "error");
+        }
       }
-    }
+    });
   };
 
   const handleSearch = (e) => {
@@ -88,30 +99,39 @@ const Users = () => {
 
   const handleStatusChange = async (userId, newStatus) => {
     try {
-      const updatedStatus = newStatus === "true"; 
+      const updatedStatus = newStatus === "true";
 
       const formData = new FormData();
       formData.append("status", updatedStatus);
-  
-      await API.put(`/admin/users/${userId}`, formData, {
+
+      await API.put(`/api/admin/users/${userId}`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
 
       const updatedData = data.map((user) =>
-        user.id === userId ? { ...user, status: newStatus==="true"?"Active":"Deactivate"} : user
+        user.id === userId
+          ? { ...user, status: newStatus === "true" ? "Active" : "Deactivate" }
+          : user
       );
       setData(updatedData);
-  
-      alert("User status updated successfully!");
+      toast.success("User status updated successfully!", {
+        position: "top-right",
+        autoClose: 3000,
+      });
     } catch (error) {
-      console.error("Error updating user status:", error);
-      alert("Failed to update user status.");
+      toast.error(
+        error.response?.data?.message ||
+          "Failed to update user status. Try again.",
+        {
+          position: "top-right",
+          autoClose: 3000,
+        }
+      );
     }
   };
-  
-  
+
   const columns = [
     {
       name: "Profile",
@@ -170,7 +190,7 @@ const Users = () => {
       name: "Change Status",
       cell: (row) => (
         <select
-          value={String(row.status)} 
+          value={String(row.status)}
           onChange={(e) => handleStatusChange(row.id, e.target.value)}
           className="px-3 py-1 border rounded-md"
         >
@@ -180,7 +200,7 @@ const Users = () => {
         </select>
       ),
     },
-    
+
     {
       name: "Action",
       cell: (row) => (
@@ -237,7 +257,6 @@ const Users = () => {
                     <i className="fas fa-trash-alt mr-2"></i> Delete User
                   </button>
                 </li>
-                
               </ul>
             </div>
           )}
@@ -349,15 +368,16 @@ const Users = () => {
                 <p className="text-red-500">{error}</p>
               ) : (
                 <div className="overflow-x-auto">
-                <DataTable
-                  columns={columns}
-                  data={data}
-                  pagination
-                  highlightOnHover
-                  striped
-                  responsive
-                  customStyles={customStyles}
-                /></div>
+                  <DataTable
+                    columns={columns}
+                    data={data}
+                    pagination
+                    highlightOnHover
+                    striped
+                    responsive
+                    customStyles={customStyles}
+                  />
+                </div>
               )}
             </div>
           </main>

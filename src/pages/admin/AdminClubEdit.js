@@ -1,6 +1,10 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import Sidebar from "../../components/admin/Sidebar";
-import { Link } from "react-router-dom";
+import { Link , useNavigate, useParams } from "react-router-dom";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import API from "../../api";
+const BASE_URL = process.env.REACT_APP_BASE_URL;
 const countries = [
   "United States",
   "India",
@@ -13,18 +17,33 @@ const AdminClubEdit = () => {
   const [formData, setFormData] = useState({
     club_name: "",
     club_logo: null,
-    firstName: "",
-    lastName: "",
+    first_name: "",
+    last_name: "",
     email: "",
     phone: "",
     country: "",
     role: "",
     password: "",
-    confirmPassword: "",
-   
   });
 
   const [errors, setErrors] = useState({});
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+
+  // Fetch club data from API
+  useEffect(() => {
+    const fetchClub = async () => {
+      try {
+        const response = await API.get(`/api/admin/users/${id}`);
+        setFormData(response.data);
+      } catch (error) {
+        console.error("Error fetching club data:", error);
+      }
+    };
+
+    if (id) fetchClub();
+  }, [id]);
 
   const validate = () => {
     const newErrors = {};
@@ -37,17 +56,17 @@ const AdminClubEdit = () => {
     }
 
     // first Name validation
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = "First Name is required.";
-    } else if (formData.firstName.length < 3) {
-      newErrors.firstName = "First Name must be at least 3 characters.";
+    if (!formData.first_name.trim()) {
+      newErrors.first_name = "First Name is required.";
+    } else if (formData.first_name.length < 3) {
+      newErrors.first_name = "First Name must be at least 3 characters.";
     }
 
     // Last Name validation
-    if (!formData.lastName.trim()) {
-      newErrors.lastName = "Last Name is required.";
-    } else if (formData.lastName.length < 3) {
-      newErrors.lastName = "Last Name must be at least 3 characters.";
+    if (!formData.last_name.trim()) {
+      newErrors.last_name = "Last Name is required.";
+    } else if (formData.last_name.length < 3) {
+      newErrors.last_name = "Last Name must be at least 3 characters.";
     }
 
     // Email validation
@@ -64,7 +83,6 @@ const AdminClubEdit = () => {
       newErrors.phone = "Phone number must be 10 digits.";
     }
 
-
     // Country validation
     if (!formData.country) {
       newErrors.country = "Please select a country.";
@@ -75,27 +93,12 @@ const AdminClubEdit = () => {
       newErrors.role = "Please select a role.";
     }
 
-    // Password validation
-    if (!formData.password) {
-      newErrors.password = "Password is required.";
-    } else if (
-      !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(
-        formData.password
-      )
-    ) {
-      newErrors.password =
-        "Password must be at least 8 characters, include uppercase, lowercase, number, and special character.";
-    }
-
-    // Confirm Password validation
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = "Please confirm your password.";
-    } else if (formData.confirmPassword !== formData.password) {
-      newErrors.confirmPassword = "Passwords do not match.";
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const handleFileChange = (e) => {
+    setFormData({ ...formData, club_logo: e.target.files[0] });
   };
 
   const handleChange = (e) => {
@@ -105,25 +108,46 @@ const AdminClubEdit = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validate()) {
-      console.log("Form Submitted:", formData);
-      alert("Registration successful!");
-      setFormData({
-        club_name: "",
-        club_logo: null,
-        firstName: "",
-        lastName: "",
-        email: "",
-        phone: "",
-        country: "",
-        role: "",
-        password: "",
-        confirmPassword: "",
-        
+
+    setLoading(true);
+
+    try {
+      const updatedData = {
+        club_name: formData.club_name,
+        club_logo: formData.club_logo,
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+        email: formData.email,
+        phone: formData.phone,
+        dob: formData.dob,
+        country: formData.country,
+        role: formData.role,
+      };
+
+      // Only include password if it's not empty
+      if (formData.password.trim() !== "") {
+        updatedData.password = formData.password;
+      }
+
+      await API.put(`${BASE_URL}/api/admin/users/${id}`, updatedData);
+      navigate("/admin/clubs");
+      toast.success("Club Updated Successfully!", {
+        position: "top-right",
+        autoClose: 3000,
       });
       setErrors({});
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "Club Update failed. Try again.",
+        {
+          position: "top-right",
+          autoClose: 3000,
+        }
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -202,25 +226,25 @@ const AdminClubEdit = () => {
                 {/* First Name Field */}
                 <div className="w-1/2">
                   <label
-                    htmlFor="firstName"
+                    htmlFor="first_name"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
                     First Name <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
-                    id="firstName"
-                    name="firstName"
-                    value={formData.firstName}
+                    id="first_name"
+                    name="first_name"
+                    value={formData.first_name}
                     onChange={handleChange}
                     className={`w-full px-4 py-2 border rounded-lg ${
-                      errors.firstName ? "border-red-500" : "border-gray-300"
+                      errors.first_name ? "border-red-500" : "border-gray-300"
                     } focus:outline-none focus:ring focus:ring-blue-300`}
                     placeholder="Enter your first name"
                   />
-                  {errors.firstName && (
+                  {errors.first_name && (
                     <p className="text-red-500 text-sm mt-1">
-                      {errors.firstName}
+                      {errors.first_name}
                     </p>
                   )}
                 </div>
@@ -228,25 +252,25 @@ const AdminClubEdit = () => {
                 {/* Last Name Field */}
                 <div className="w-1/2">
                   <label
-                    htmlFor="lastName"
+                    htmlFor="last_name"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
                     Last Name <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
-                    id="lastName"
-                    name="lastName"
-                    value={formData.lastName}
+                    id="last_name"
+                    name="last_name"
+                    value={formData.last_name}
                     onChange={handleChange}
                     className={`w-full px-4 py-2 border rounded-lg ${
-                      errors.lastName ? "border-red-500" : "border-gray-300"
+                      errors.last_name ? "border-red-500" : "border-gray-300"
                     } focus:outline-none focus:ring focus:ring-blue-300`}
                     placeholder="Enter your last name"
                   />
-                  {errors.lastName && (
+                  {errors.last_name && (
                     <p className="text-red-500 text-sm mt-1">
-                      {errors.lastName}
+                      {errors.last_name}
                     </p>
                   )}
                 </div>
@@ -364,13 +388,13 @@ const AdminClubEdit = () => {
                   htmlFor="password"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Password <span className="text-red-500">*</span>
+                  Password 
                 </label>
                 <input
                   type="password"
                   id="password"
                   name="password"
-                  value={formData.password}
+                 
                   onChange={handleChange}
                   className={`w-full px-4 py-2 border rounded-lg ${
                     errors.password ? "border-red-500" : "border-gray-300"
@@ -381,36 +405,6 @@ const AdminClubEdit = () => {
                   <p className="text-red-500 text-sm mt-1">{errors.password}</p>
                 )}
               </div>
-
-              {/* Confirm Password Field */}
-              <div className="mb-6">
-                <label
-                  htmlFor="confirmPassword"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Confirm Password <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="password"
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  className={`w-full px-4 py-2 border rounded-lg ${
-                    errors.confirmPassword
-                      ? "border-red-500"
-                      : "border-gray-300"
-                  } focus:outline-none focus:ring focus:ring-blue-300`}
-                  placeholder="Confirm your password"
-                />
-                {errors.confirmPassword && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.confirmPassword}
-                  </p>
-                )}
-              </div>
-
-             
 
               {/* Submit Button */}
               <div>

@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import Sidebar from "../../components/admin/Sidebar";
 import { Link, useNavigate } from "react-router-dom";
 import API from "../../api";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 const countries = [
   "United States",
@@ -15,8 +17,8 @@ const ClubForm = () => {
   const [formData, setFormData] = useState({
     club_name: "",
     club_logo: null,
-    firstName: "",
-    lastName: "",
+    first_name: "",
+    last_name: "",
     email: "",
     phone: "",
     country: "",
@@ -26,28 +28,28 @@ const ClubForm = () => {
   });
 
   const [errors, setErrors] = useState({});
-const navigate = useNavigate();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [apiError, setApiError] = useState(null);
+
   const validate = () => {
     const newErrors = {};
 
     if (!formData.club_name.trim()) {
       newErrors.club_name = "Club Name is required.";
     }
-  
+
     // first Name validation
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = "First Name is required.";
-    } else if (formData.firstName.length < 3) {
-      newErrors.firstName = "First Name must be at least 3 characters.";
+    if (!formData.first_name.trim()) {
+      newErrors.first_name = "First Name is required.";
+    } else if (formData.first_name.length < 3) {
+      newErrors.first_name = "First Name must be at least 3 characters.";
     }
 
     // Last Name validation
-    if (!formData.lastName.trim()) {
-      newErrors.lastName = "Last Name is required.";
-    } else if (formData.lastName.length < 3) {
-      newErrors.lastName = "Last Name must be at least 3 characters.";
+    if (!formData.last_name.trim()) {
+      newErrors.last_name = "Last Name is required.";
+    } else if (formData.last_name.length < 3) {
+      newErrors.last_name = "Last Name must be at least 3 characters.";
     }
 
     // Email validation
@@ -63,7 +65,6 @@ const navigate = useNavigate();
     } else if (!/^\d{10}$/.test(formData.phone)) {
       newErrors.phone = "Phone number must be 10 digits.";
     }
-
 
     // Country validation
     if (!formData.country) {
@@ -98,6 +99,10 @@ const navigate = useNavigate();
     return Object.keys(newErrors).length === 0;
   };
 
+  const handleFileChange = (e) => {
+    setFormData({ ...formData, club_logo: e.target.files[0] });
+  };
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -111,29 +116,37 @@ const navigate = useNavigate();
     if (!validate()) return;
 
     setLoading(true);
-    setApiError(null);
 
     try {
-      await API.post(`${BASE_URL}/admin/users`, {
-        club_name: formData.club_name,
-        club_logo: formData.club_logo,
-        first_name: formData.firstName,
-        last_name: formData.lastName,
-        email: formData.email,
-        phone: formData.phone,
-        country: formData.country,
-        role: formData.role,
-        password: formData.password,
+      // Creating FormData to send files
+      const data = new FormData();
+      data.append("club_name", formData.club_name);
+      data.append("club_logo", formData.club_logo); 
+      data.append("first_name", formData.first_name);
+      data.append("last_name", formData.last_name);
+      data.append("email", formData.email);
+      data.append("phone", formData.phone);
+      data.append("country", formData.country);
+      data.append("role", formData.role);
+      data.append("password", formData.password);
+
+      await API.post(`${BASE_URL}/api/admin/users`, data, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
-      navigate("/admin/users");
+
+      navigate("/admin/clubs");
+      toast.success("Club Created Successfully!", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+
       setFormData({
         club_name: "",
         club_logo: null,
-        firstName: "",
-        lastName: "",
+        first_name: "",
+        last_name: "",
         email: "",
         phone: "",
-        dob: "",
         country: "",
         role: "",
         password: "",
@@ -141,11 +154,16 @@ const navigate = useNavigate();
       });
       setErrors({});
     } catch (error) {
-      setApiError(error.response?.data?.message || "User Create failed. Try again.");
+      toast.error(
+        error.response?.data?.message || "Club creation failed. Try again.",
+        {
+          position: "top-right",
+          autoClose: 3000,
+        }
+      );
     } finally {
       setLoading(false);
     }
-
   };
 
   return (
@@ -169,79 +187,78 @@ const navigate = useNavigate();
             <h1 className="text-2xl font-bold text-gray-800 mb-6">
               Create Club
             </h1>
-            {apiError && <p style={{ color: "red" }}>{apiError}</p>}
-            <form onSubmit={handleSubmit} noValidate>
 
+            <form onSubmit={handleSubmit} noValidate>
               {/* Club Name Field */}
               <div className="mb-4">
-                  <label
-                    htmlFor="club_name"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Club Name <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="club_name"
-                    name="club_name"
-                    value={formData.club_name}
-                    onChange={handleChange}
-                    className={`w-full px-4 py-2 border rounded-lg ${
-                      errors.name ? "border-red-500" : "border-gray-300"
-                    } focus:outline-none focus:ring focus:ring-blue-300`}
-                    placeholder="Enter your Club Name"
-                  />
-                  {errors.club_name && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.club_name}
-                    </p>
-                  )}
-                </div>
+                <label
+                  htmlFor="club_name"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Club Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="club_name"
+                  name="club_name"
+                  value={formData.club_name}
+                  onChange={handleChange}
+                  className={`w-full px-4 py-2 border rounded-lg ${
+                    errors.name ? "border-red-500" : "border-gray-300"
+                  } focus:outline-none focus:ring focus:ring-blue-300`}
+                  placeholder="Enter your Club Name"
+                />
+                {errors.club_name && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.club_name}
+                  </p>
+                )}
+              </div>
 
               {/* Club Logo */}
               <div className="mb-4">
-                  <label className="block text-gray-700 font-medium mb-2">
-                    Club Logo <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleSubmit}
-                    className={`w-full p-3 border ${
-                      errors.club_logo ? "border-red-500" : "border-gray-300"
-                    } rounded-lg`}
-                  />
-                  {errors.club_logo && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.club_logo}
-                    </p>
-                  )}
-                </div>
+                <label className="block text-gray-700 font-medium mb-2">
+                  Club Logo <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className={`w-full p-3 border ${
+                    errors.club_logo ? "border-red-500" : "border-gray-300"
+                  } rounded-lg`}
+                />
+                {errors.club_logo && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.club_logo}
+                  </p>
+                )}
+              </div>
 
               {/* Name Fields (First Name and Last Name) */}
               <div className="flex space-x-4 mb-4">
                 {/* First Name Field */}
                 <div className="w-1/2">
                   <label
-                    htmlFor="firstName"
+                    htmlFor="first_name"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
                     First Name <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
-                    id="firstName"
-                    name="firstName"
-                    value={formData.firstName}
+                    id="first_name"
+                    name="first_name"
+                    value={formData.first_name}
                     onChange={handleChange}
                     className={`w-full px-4 py-2 border rounded-lg ${
-                      errors.firstName ? "border-red-500" : "border-gray-300"
+                      errors.first_name ? "border-red-500" : "border-gray-300"
                     } focus:outline-none focus:ring focus:ring-blue-300`}
                     placeholder="Enter your first name"
                   />
-                  {errors.firstName && (
+                  {errors.first_name && (
                     <p className="text-red-500 text-sm mt-1">
-                      {errors.firstName}
+                      {errors.first_name}
                     </p>
                   )}
                 </div>
@@ -249,25 +266,25 @@ const navigate = useNavigate();
                 {/* Last Name Field */}
                 <div className="w-1/2">
                   <label
-                    htmlFor="lastName"
+                    htmlFor="last_name"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
                     Last Name <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
-                    id="lastName"
-                    name="lastName"
-                    value={formData.lastName}
+                    id="last_name"
+                    name="last_name"
+                    value={formData.last_name}
                     onChange={handleChange}
                     className={`w-full px-4 py-2 border rounded-lg ${
-                      errors.lastName ? "border-red-500" : "border-gray-300"
+                      errors.last_name ? "border-red-500" : "border-gray-300"
                     } focus:outline-none focus:ring focus:ring-blue-300`}
                     placeholder="Enter your last name"
                   />
-                  {errors.lastName && (
+                  {errors.last_name && (
                     <p className="text-red-500 text-sm mt-1">
-                      {errors.lastName}
+                      {errors.last_name}
                     </p>
                   )}
                 </div>
@@ -430,8 +447,6 @@ const navigate = useNavigate();
                   </p>
                 )}
               </div>
-
-             
 
               {/* Submit Button */}
               <div>
