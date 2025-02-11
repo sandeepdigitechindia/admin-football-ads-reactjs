@@ -1,55 +1,94 @@
-import React, { useState, useRef } from "react";
+import React, { useState,useEffect } from "react";
 import Sidebar from "../../components/admin/Sidebar";
 import { Link, useNavigate } from "react-router-dom";
 import DataTable from "react-data-table-component";
-
+import Swal from "sweetalert2";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import API from "../../api";
+const BASE_URL = process.env.REACT_APP_BASE_URL;
 const Posts = () => {
-  const navigate = useNavigate();
-  const initialData = [
-    {
-      id: 1,
-      image: "/common/club.png",
-      name: "Club 1",
-      title: "Post Title 1",
-      applicantsCount: 5,
-      date: "Jan 10, 2025",
-      status: "Open",
-    },
-    {
-      id: 2,
-      image: "/common/club.png",
-      name: "Club 2",
-      title: "Post Title 2",
-      applicantsCount: 2,
-      date: "Jan 9, 2025",
-      status: "Close",
-    },
-    {
-      id: 3,
-      image: "/common/club.png",
-      name: "Club 3",
-      title: "Post Title 3",
-      applicantsCount: 8,
-      date: "Jan 8, 2025",
-      status: "Archived",
-    },
-    {
-      id: 4,
-      image: "/common/club.png",
-      name: "Club 4",
-      title: "Another Post",
-      applicantsCount: 3,
-      date: "Jan 7, 2025",
-      status: "Open",
-    },
-  ];
+  
+const navigate = useNavigate();
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState([]);
+  const [originalData, setOriginalData] = useState([]);
 
-  const [data, setData] = useState(initialData);
+  useEffect(() => {
+    const fetchClubs = async () => {
+      try {
+        const response = await API.get("/api/admin/posts");
+
+        // Ensure the response is an array
+        if (!Array.isArray(response.data)) {
+          throw new Error("Invalid response format");
+        }
+
+        const postsFromAPI = response.data.map((post) => ({
+          id: post._id || "",
+          image: BASE_URL+post.userId.club_logo || "/common/club.png",
+          name: post.userId.club_name || "N/A",
+          title: post.title || "N/A",
+          applicantsCount: "5",
+          date: new Date(post.createdAt).toLocaleDateString("en-GB") || "N/A",
+          status: post.status,
+        }));
+
+        setData(postsFromAPI);
+        setOriginalData(postsFromAPI);
+      } catch (error) {
+        console.error("Error fetching clubs:", error);
+        setError(error.response?.data?.message || "Failed to fetch clubs");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchClubs();
+  }, []);
+
   const [searchTerm, setSearchTerm] = useState("");
 
-  // State to manage dropdown visibility
-  const [dropdownOpen, setDropdownOpen] = useState(null);
-  const dropdownRef = useRef(null);
+  const handleSearch = (e) => {
+    const value = e.target.value.toLowerCase();
+    setSearchTerm(value);
+    if (value === "") {
+      setData(originalData);
+    } else {
+      const filtered = originalData.filter(
+        (post) =>
+          post.club_name.toLowerCase().includes(value) ||
+          post.title.toLowerCase().includes(value)
+      );
+      setData(filtered);
+    }
+  };
+
+  // Handle Delete Post (e.g., delete from API or state)
+  const handleDeletePost = async (postId) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await API.delete(`/api/admin/posts/permanent/${postId}`);
+          setData((prevPosts) =>
+            prevPosts.filter((post) => post.id !== postId)
+          );
+          Swal.fire("Deleted!", "Post has been deleted.", "success");
+        } catch (error) {
+          Swal.fire("Error!", "Failed to delete post. Try again.", "error");
+        }
+      }
+    });
+  };
 
   const columns = [
     {
@@ -115,10 +154,10 @@ const Posts = () => {
       sortable: true,
       cell: (row) => (
         <div className="text-sm text-gray-600 text-center">
-          {/* Circle with applicant count and onClick event */}
+         
           <div
             className="inline-flex items-center justify-center w-8 h-8 bg-blue-500 text-white rounded-full cursor-pointer"
-            onClick={() => navigate(`/admin/post/applicants/${row.id}`)} // Navigate to applicants page
+            onClick={() => navigate(`/admin/post/applicants/${row.id}`)} 
           >
             {row.applicantsCount}
           </div>{" "}
@@ -131,71 +170,27 @@ const Posts = () => {
       name: "Action",
       cell: (row) => (
         <div className="text-center relative">
-          {/* Action Button */}
-          <button
-            className="py-2 px-4 bg-blue-500 text-white rounded hover:bg-blue-600 transition flex items-center gap-2"
-            onClick={() =>
-              setDropdownOpen(dropdownOpen === row.id ? null : row.id)
-            } // Toggle dropdown
+          <select
+            className="p-2 mx-4 border rounded bg-blue-600 text-white shadow-sm outline-none"
+            onChange={(e) => {
+              const action = e.target.value;
+              if (action === "view") {
+                navigate(`/admin/post/view/${row.id}`);
+              } else if (action === "edit") {
+                navigate(`/admin/post/edit/${row.id}`);
+              } else if (action === "delete") {
+                handleDeletePost(row.id);
+              }
+              e.target.value = "";
+            }}
           >
-            <span>Action</span>
-            {/* Add a dropdown arrow icon */}
-            <i
-              className={`fas fa-chevron-down ${
-                dropdownOpen === row.id ? "transform rotate-180" : ""
-              }`}
-            ></i>
-          </button>
-
-          {/* Dropdown Menu */}
-          {dropdownOpen === row.id && (
-            <div
-              ref={dropdownRef}
-              className="absolute right-0 mt-2 w-48 bg-white border rounded shadow-lg opacity-100 pointer-events-auto z-50"
-            >
-              <ul className="list-none p-0 m-0">
-                {/* View Post Option */}
-                <li>
-                  <button
-                    onClick={() => navigate(`/admin/post/view/${row.id}`)}
-                    className="w-full text-left py-2 px-4 hover:bg-gray-200 transition duration-300"
-                  >
-                    <i className="fas fa-eye mr-2"></i> View Post
-                  </button>
-                </li>
-
-                {/* Edit Post Option */}
-                <li>
-                  <button
-                    onClick={() => navigate(`/admin/post/edit/${row.id}`)}
-                    className="w-full text-left py-2 px-4 hover:bg-gray-200 transition duration-300"
-                  >
-                    <i className="fas fa-edit mr-2"></i> Edit Post
-                  </button>
-                </li>
-
-                {/* Delete Post Option */}
-                <li>
-                  <button
-                    onClick={() => handleDeletePost(row.id)}
-                    className="w-full text-left py-2 px-4 hover:bg-gray-200 transition duration-300 text-red-500"
-                  >
-                    <i className="fas fa-trash-alt mr-2"></i> Delete Post
-                  </button>
-                </li>
-
-                {/* Applicants Option */}
-                {/* <li>
-                  <button
-                    onClick={() => navigate(`/admin/post/applicants/${row.id}`)}
-                    className="w-full text-left py-2 px-4 hover:bg-gray-200 transition duration-300"
-                  >
-                    <i className="fas fa-users mr-2"></i> Applicants
-                  </button>
-                </li> */}
-              </ul>
-            </div>
-          )}
+            <option value="" className="">
+              Action
+            </option>
+            <option value="view">👁️ View Post</option>
+            <option value="edit">✏️ Edit Post</option>
+            <option value="delete">🗑️ Delete Post</option>
+          </select>
         </div>
       ),
       center: true,
@@ -253,26 +248,6 @@ const Posts = () => {
     },
   };
 
-  const handleSearch = (e) => {
-    const value = e.target.value.toLowerCase();
-    setSearchTerm(value);
-    const filtered = initialData.filter((item) =>
-      item.title.toLowerCase().includes(value)
-    );
-    setData(filtered);
-  };
-
-  // Handle Delete Post (e.g., delete from API or state)
-  const handleDeletePost = (postId) => {
-    const isConfirmed = window.confirm(
-      "Are you sure you want to delete this post?"
-    );
-    if (isConfirmed) {
-      setData(data.filter((post) => post.id !== postId));
-      alert("Post deleted successfully!");
-    }
-  };
-
   return (
     <div className="bg-gray-100">
       {/* Wrapper for Sidebar and Main Content */}
@@ -321,16 +296,23 @@ const Posts = () => {
               </div>
             </div>
 
-            {/* Data Table */}
-            <DataTable
-              columns={columns}
-              data={data}
-              pagination
-              highlightOnHover
-              striped
-              responsive
-              customStyles={customStyles}
-            />
+            {loading ? (
+                <p>Loading clubs...</p>
+              ) : error ? (
+                <p className="text-red-500">{error}</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <DataTable
+                    columns={columns}
+                    data={data}
+                    pagination
+                    highlightOnHover
+                    striped
+                    responsive
+                    customStyles={customStyles}
+                  />
+                </div>
+              )}
           </div>
         </main>
       </div>

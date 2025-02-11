@@ -1,6 +1,8 @@
-import React from "react";
-import { useParams } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link,useParams,useNavigate } from "react-router-dom";
 import Sidebar from "../../components/admin/Sidebar";
+import Swal from "sweetalert2";
+import API from "../../api";
 
 const PostDetail = () => {
   const { id } = useParams();
@@ -40,12 +42,7 @@ const PostDetail = () => {
             <h1 className="text-4xl font-extrabold text-gray-900">
               Job Details
             </h1>
-            {/* <button
-              onClick={() => alert(`You applied for ${job.title}`)}
-              className="py-3 px-10 bg-blue-600 text-white text-lg font-semibold rounded hover:bg-blue-700 transition shadow-lg"
-            >
-              Apply Now
-            </button> */}
+           
           </header>
 
           {/* Job Details Section */}

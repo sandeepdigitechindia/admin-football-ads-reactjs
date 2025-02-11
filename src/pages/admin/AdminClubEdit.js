@@ -1,6 +1,6 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "../../components/admin/Sidebar";
-import { Link , useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import API from "../../api";
@@ -51,9 +51,6 @@ const AdminClubEdit = () => {
     if (!formData.club_name.trim()) {
       newErrors.club_name = "Club Name is required.";
     }
-    if (!formData.club_logo) {
-      newErrors.club_logo = "Club Logo is required.";
-    }
 
     // first Name validation
     if (!formData.first_name.trim()) {
@@ -98,7 +95,9 @@ const AdminClubEdit = () => {
   };
 
   const handleFileChange = (e) => {
-    setFormData({ ...formData, club_logo: e.target.files[0] });
+    if (e.target.files.length > 0) {
+      setFormData({ ...formData, club_logo: e.target.files[0] });
+    }
   };
 
   const handleChange = (e) => {
@@ -110,28 +109,38 @@ const AdminClubEdit = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    if (!validate()) return;
     setLoading(true);
 
     try {
-      const updatedData = {
-        club_name: formData.club_name,
-        club_logo: formData.club_logo,
-        first_name: formData.first_name,
-        last_name: formData.last_name,
-        email: formData.email,
-        phone: formData.phone,
-        dob: formData.dob,
-        country: formData.country,
-        role: formData.role,
-      };
+      const formDataToSend = new FormData();
+
+      // Append text fields
+      formDataToSend.append("club_name", formData.club_name);
+      formDataToSend.append("first_name", formData.first_name);
+      formDataToSend.append("last_name", formData.last_name);
+      formDataToSend.append("email", formData.email);
+      formDataToSend.append("phone", formData.phone);
+      formDataToSend.append("dob", formData.dob);
+      formDataToSend.append("country", formData.country);
+      formDataToSend.append("role", formData.role);
 
       // Only include password if it's not empty
       if (formData.password.trim() !== "") {
-        updatedData.password = formData.password;
+        formDataToSend.append("password", formData.password);
       }
 
-      await API.put(`${BASE_URL}/api/admin/users/${id}`, updatedData);
+      // Append file only if it's selected
+      if (formData.club_logo instanceof File) {
+        formDataToSend.append("club_logo", formData.club_logo);
+      }
+
+      await API.put(`${BASE_URL}/api/admin/users/${id}`, formDataToSend, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
       navigate("/admin/clubs");
       toast.success("Club Updated Successfully!", {
         position: "top-right",
@@ -169,57 +178,59 @@ const AdminClubEdit = () => {
             </Link>
           </header>
           <div className="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow">
-            <h1 className="text-2xl font-bold text-gray-800 mb-6">
-              Edit Club
-            </h1>
+            <h1 className="text-2xl font-bold text-gray-800 mb-6">Edit Club</h1>
 
             <form onSubmit={handleSubmit} noValidate>
-
               {/* Club Name Field */}
               <div className="mb-4">
-                  <label
-                    htmlFor="club_name"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Club Name <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="club_name"
-                    name="club_name"
-                    value={formData.club_name}
-                    onChange={handleChange}
-                    className={`w-full px-4 py-2 border rounded-lg ${
-                      errors.name ? "border-red-500" : "border-gray-300"
-                    } focus:outline-none focus:ring focus:ring-blue-300`}
-                    placeholder="Enter your Club Name"
-                  />
-                  {errors.club_name && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.club_name}
-                    </p>
-                  )}
-                </div>
+                <label
+                  htmlFor="club_name"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Club Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="club_name"
+                  name="club_name"
+                  value={formData.club_name}
+                  onChange={handleChange}
+                  className={`w-full px-4 py-2 border rounded-lg ${
+                    errors.name ? "border-red-500" : "border-gray-300"
+                  } focus:outline-none focus:ring focus:ring-blue-300`}
+                  placeholder="Enter your Club Name"
+                />
+                {errors.club_name && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.club_name}
+                  </p>
+                )}
+              </div>
 
               {/* Club Logo */}
               <div className="mb-4">
-                  <label className="block text-gray-700 font-medium mb-2">
-                    Club Logo <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleSubmit}
-                    className={`w-full p-3 border ${
-                      errors.club_logo ? "border-red-500" : "border-gray-300"
-                    } rounded-lg`}
-                  />
-                  {errors.club_logo && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.club_logo}
-                    </p>
-                  )}
-                </div>
+                <label className="block text-gray-700 font-medium mb-2">
+                  Club Logo <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className={`w-full p-3 border ${
+                    errors.club_logo ? "border-red-500" : "border-gray-300"
+                  } rounded-lg`}
+                />
+                <img
+                  src={BASE_URL + formData.club_logo}
+                  alt={`${formData.club_name}`}
+                  className="w-48 h-24 rounded-full mx-auto my-4"
+                />
+                {errors.club_logo && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.club_logo}
+                  </p>
+                )}
+              </div>
 
               {/* Name Fields (First Name and Last Name) */}
               <div className="flex space-x-4 mb-4">
@@ -388,13 +399,12 @@ const AdminClubEdit = () => {
                   htmlFor="password"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Password 
+                  Password
                 </label>
                 <input
                   type="password"
                   id="password"
                   name="password"
-                 
                   onChange={handleChange}
                   className={`w-full px-4 py-2 border rounded-lg ${
                     errors.password ? "border-red-500" : "border-gray-300"
@@ -411,8 +421,9 @@ const AdminClubEdit = () => {
                 <button
                   type="submit"
                   className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition duration-300"
+                  disabled={loading}
                 >
-                  Register
+                  {loading ? "Register..." : "Register"}
                 </button>
               </div>
             </form>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "../../components/admin/Sidebar";
 import DataTable from "react-data-table-component";
 import { Link, useNavigate } from "react-router-dom";
@@ -52,10 +52,6 @@ const Clubs = () => {
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  // State to manage dropdown visibility
-  const [dropdownOpen, setDropdownOpen] = useState(null);
-  const dropdownRef = useRef(null);
-
   // Handle Delete Club (e.g., delete from API or state)
   const handleDeleteClub = async (clubId) => {
     Swal.fire({
@@ -69,7 +65,7 @@ const Clubs = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await API.delete(`/api/admin/users/${clubId}`);
+          await API.delete(`/api/admin/users/permanent/${clubId}`);
           setData((prevClubs) =>
             prevClubs.filter((club) => club.id !== clubId)
           );
@@ -209,65 +205,30 @@ const Clubs = () => {
       name: "Action",
       cell: (row) => (
         <div className="text-center relative">
-          {/* Action Button */}
-          <button
-            className="py-2 px-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition flex items-center"
-            onClick={() =>
-              setDropdownOpen(dropdownOpen === row.id ? null : row.id)
-            } // Toggle dropdown
+          <select
+            className="p-2 mx-4 border rounded bg-blue-600 text-white shadow-sm outline-none"
+            onChange={(e) => {
+              const action = e.target.value;
+              if (action === "view") {
+                navigate(`/admin/club/view/${row.id}`);
+              } else if (action === "edit") {
+                navigate(`/admin/club/edit/${row.id}`);
+              } else if (action === "delete") {
+                handleDeleteClub(row.id);
+              }
+              e.target.value = "";
+            }}
           >
-            <span>Action</span>&nbsp;
-            {/* Add a dropdown arrow icon */}
-            <i
-              className={`fas fa-chevron-down ${
-                dropdownOpen === row.id ? "transform rotate-180" : ""
-              }`}
-            ></i>
-          </button>
-
-          {/* Dropdown Menu */}
-          {dropdownOpen === row.id && (
-            <div
-              ref={dropdownRef}
-              className="absolute right-0 mt-2 w-48 bg-white border rounded shadow-lg opacity-100 pointer-events-auto z-50"
-            >
-              <ul className="list-none p-0 m-0">
-                {/* View Club Option */}
-                <li>
-                  <button
-                    onClick={() => navigate(`/admin/club/view/${row.id}`)}
-                    className="w-full text-left py-2 px-4 hover:bg-gray-200 transition duration-300"
-                  >
-                    <i className="fas fa-eye mr-2"></i> View Club
-                  </button>
-                </li>
-
-                {/* Edit Club Option */}
-                <li>
-                  <button
-                    onClick={() => navigate(`/admin/club/edit/${row.id}`)}
-                    className="w-full text-left py-2 px-4 hover:bg-gray-200 transition duration-300"
-                  >
-                    <i className="fas fa-edit mr-2"></i> Edit Club
-                  </button>
-                </li>
-
-                {/* Delete club Option */}
-                <li>
-                  <button
-                    onClick={() => handleDeleteClub(row.id)}
-                    className="w-full text-left py-2 px-4 hover:bg-gray-200 transition duration-300 text-red-500"
-                  >
-                    <i className="fas fa-trash-alt mr-2"></i> Delete Club
-                  </button>
-                </li>
-              </ul>
-            </div>
-          )}
+            <option value="">Action</option>
+            <option value="view">👁️ View Club</option>
+            <option value="edit">✏️ Edit Club</option>
+            <option value="delete">🗑️ Delete Club</option>
+          </select>
         </div>
       ),
       center: true,
-    },
+    }
+    
   ];
 
   const customStyles = {
@@ -325,7 +286,7 @@ const Clubs = () => {
     <div className="bg-gray-100">
       <div className="flex flex-col lg:flex-row">
         <Sidebar />
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto w-full">
           <main className="flex-1 p-6 space-y-6">
             <header className="flex justify-between items-center flex-wrap gap-4">
               <h1 className="text-3xl font-bold text-gray-800">All Clubs</h1>

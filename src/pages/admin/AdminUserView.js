@@ -84,7 +84,7 @@ const AdminUserView = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await API.delete(`/api/admin/users/${userId}`);
+          await API.delete(`/api/admin/users/permanent/${userId}`);
           Swal.fire("Deleted!", "User has been deleted.", "success");
           navigate("/admin/users");
         } catch (error) {
