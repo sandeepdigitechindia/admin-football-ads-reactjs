@@ -1,26 +1,26 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "../../components/admin/Sidebar";
-import { Link, useParams,useNavigate } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import API from "../../api";
 
 const AdminClubView = () => {
   const { id } = useParams();
-    const navigate = useNavigate();
-    const [formData, setFormData] = useState({
-      club_name:"",
-      club_logo:"",
-        first_name: "",
-        last_name: "",
-        email: "",
-        phone: "",
-        dob: "",
-        country: "",
-        role: "",
-        password: "",
-      });
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    club_name: "",
+    club_logo: "",
+    first_name: "",
+    last_name: "",
+    email: "",
+    phone: "",
+    dob: "",
+    country: "",
+    role: "",
+    password: "",
+  });
 
-      // Fetch club data from API
+  // Fetch club data from API
   useEffect(() => {
     const fetchClub = async () => {
       try {
@@ -144,17 +144,19 @@ const AdminClubView = () => {
                 <div className="p-4">
                   <table className="w-full text-left text-gray-700">
                     <tbody>
-                    <tr>
+                      <tr>
                         <td className="font-semibold py-2">Club Name:</td>
                         <td>{selectedRow.clubName}</td>
                       </tr>
                       <tr>
                         <td className="font-semibold py-2">Club Logo:</td>
-                        <td><img
-                          src={selectedRow.clubLogo}
-                          alt={`${selectedRow.clubName}`}
-                          className="w-12 h-12 rounded-full"
-                        /></td>
+                        <td>
+                          <img
+                            src={selectedRow.clubLogo}
+                            alt={`${selectedRow.clubName}`}
+                            className="w-12 h-12 rounded-full"
+                          />
+                        </td>
                       </tr>
                       <tr>
                         <td className="font-semibold py-2">First Name:</td>
@@ -172,12 +174,11 @@ const AdminClubView = () => {
                         <td className="font-semibold py-2">Phone:</td>
                         <td>{selectedRow.phone}</td>
                       </tr>
-                     
+
                       <tr>
                         <td className="font-semibold py-2">Country:</td>
                         <td>{selectedRow.country}</td>
                       </tr>
-                      
                     </tbody>
                   </table>
                 </div>

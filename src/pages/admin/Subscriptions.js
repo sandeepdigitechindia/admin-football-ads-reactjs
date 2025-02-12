@@ -1,72 +1,142 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "../../components/admin/Sidebar";
 import DataTable from "react-data-table-component";
 import { Link, useNavigate } from "react-router-dom";
-
+import Swal from "sweetalert2";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import API from "../../api";
 const Subscriptions = () => {
   const navigate = useNavigate();
 
-  // Initial subscriptions data
-  const initialSubscriptions = [
-    {
-      id: 1,
-      title: "Basic Plan",
-      price: "$10/month",
-      features: ["Feature 1", "Feature 2", "Feature 3"],
-      status: "Active",
-    },
-    {
-      id: 2,
-      title: "Premium Plan",
-      price: "$20/month",
-      features: ["Feature A", "Feature B", "Feature C"],
-      status: "Deactivate",
-    },
-    {
-      id: 3,
-      title: "Enterprise Plan",
-      price: "$50/month",
-      features: ["Feature X", "Feature Y", "Feature Z"],
-      status: "Active",
-    },
-  ];
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState([]);
+  const [originalData, setOriginalData] = useState([]);
 
-  const [data, setData] = useState(initialSubscriptions);
+  useEffect(() => {
+    const fetchSubscriptions = async () => {
+      try {
+        const response = await API.get("/api/admin/subscriptions");
+
+        // Ensure the response is an array
+        if (!Array.isArray(response.data)) {
+          throw new Error("Invalid response format");
+        }
+
+        const subscriptionsFromAPI = response.data.map((subscription) => ({
+          id: subscription._id || "",
+          title: subscription.title || "N/A",
+          price: subscription.price || "N/A",
+          duration: subscription.duration || "N/A",
+          features: subscription.features || "N/A",
+          status: subscription.status === "true" ? "Active" : "Deactivate",
+        }));
+
+        setData(subscriptionsFromAPI);
+        setOriginalData(subscriptionsFromAPI);
+      } catch (error) {
+        console.error("Error fetching subscriptions:", error);
+        setError(
+          error.response?.data?.message || "Failed to fetch subscriptions"
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSubscriptions();
+  }, []);
+
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Dropdown state
-  const [dropdownOpen, setDropdownOpen] = useState(null);
-  const dropdownRef = useRef(null);
+  // Handle Delete Subscription (e.g., delete from API or state)
+  const handleDeleteSubscription = async (subscriptionId) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await API.delete(
+            `/api/admin/subscriptions/permanent/${subscriptionId}`
+          );
+          setData((prevSubscriptions) =>
+            prevSubscriptions.filter(
+              (subscription) => subscription.id !== subscriptionId
+            )
+          );
 
-  // Handle Delete Subscription
-  const handleDeleteSubscription = (subscriptionId) => {
-    const isConfirmed = window.confirm(
-      "Are you sure you want to delete this subscription?"
-    );
-    if (isConfirmed) {
-      setData(data.filter((sub) => sub.id !== subscriptionId));
-      alert("Subscription deleted successfully!");
-    }
+          Swal.fire("Deleted!", "Subscription has been deleted.", "success");
+        } catch (error) {
+          console.error("Error deleting subscription:", error);
+          Swal.fire(
+            "Error!",
+            "Failed to delete subscription. Try again.",
+            "error"
+          );
+        }
+      }
+    });
   };
 
-  // Handle Search
   const handleSearch = (e) => {
     const value = e.target.value.toLowerCase();
     setSearchTerm(value);
-    const filtered = initialSubscriptions.filter(
-      (sub) =>
-        sub.title.toLowerCase().includes(value) ||
-        sub.price.toLowerCase().includes(value)
-    );
-    setData(filtered);
+    if (value === "") {
+      setData(originalData);
+    } else {
+      const filtered = originalData.filter(
+        (subscription) =>
+          subscription.title.toLowerCase().includes(value) ||
+          subscription.price.toLowerCase().includes(value) ||
+          subscription.duration.toLowerCase().includes(value)
+      );
+      setData(filtered);
+    }
   };
 
-  // Handle Status Change
-  const handleStatusChange = (subscriptionId, newStatus) => {
-    const updatedData = data.map((sub) =>
-      sub.id === subscriptionId ? { ...sub, status: newStatus } : sub
-    );
-    setData(updatedData);
+  const handleStatusChange = async (subscriptionId, newStatus) => {
+    try {
+      const updatedStatus = newStatus === "true";
+
+      const formData = new FormData();
+      formData.append("status", updatedStatus);
+
+      await API.put(`/api/admin/subscriptions/${subscriptionId}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      const updatedData = data.map((subscription) =>
+        subscription.id === subscriptionId
+          ? {
+              ...subscription,
+              status: newStatus === "true" ? "Active" : "Deactivate",
+            }
+          : subscription
+      );
+      setData(updatedData);
+      toast.success("Subscription status updated successfully!", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message ||
+          "Failed to update subscription status. Try again.",
+        {
+          position: "top-right",
+          autoClose: 3000,
+        }
+      );
+    }
   };
 
   const columns = [
@@ -82,15 +152,26 @@ const Subscriptions = () => {
     },
     {
       name: "Features",
-      selector: (row) => (
-        <ul>
-          {row.features.map((feature, index) => (
-            <li key={index} className="text-sm text-gray-700">
-              - {feature}
-            </li>
-          ))}
-        </ul>
-      ),
+      selector: (row) => {
+        let features = [];
+        try {
+          features = JSON.parse(row.features);
+        } catch (error) {
+          console.error("Invalid JSON in features:", row.features, error);
+        }
+
+        return (
+          <ul>
+            {features.length > 0
+              ? features.map((feature, index) => (
+                  <li key={index} className="text-sm text-gray-700">
+                    - {feature}
+                  </li>
+                ))
+              : "No features available"}
+          </ul>
+        );
+      },
     },
     {
       name: "Status",
@@ -110,12 +191,13 @@ const Subscriptions = () => {
       name: "Change Status",
       cell: (row) => (
         <select
-          value={row.status}
+          value={String(row.status)}
           onChange={(e) => handleStatusChange(row.id, e.target.value)}
           className="px-3 py-1 border rounded-md"
         >
-          <option value="Active">Active</option>
-          <option value="Deactivate">Deactivate</option>
+          <option value="">Change</option>
+          <option value="true">Active</option>
+          <option value="false">Deactivate</option>
         </select>
       ),
     },
@@ -123,45 +205,22 @@ const Subscriptions = () => {
       name: "Action",
       cell: (row) => (
         <div className="text-center relative">
-          <button
-            className="py-2 px-4 bg-blue-500 text-white rounded hover:bg-blue-600 transition flex items-center gap-2"
-            onClick={() =>
-              setDropdownOpen(dropdownOpen === row.id ? null : row.id)
-            }
+          <select
+            className="p-2 mx-4 border rounded bg-blue-600 text-white shadow-sm outline-none"
+            onChange={(e) => {
+              const action = e.target.value;
+              if (action === "edit") {
+                navigate(`/admin/subscription/edit/${row.id}`);
+              } else if (action === "delete") {
+                handleDeleteSubscription(row.id);
+              }
+              e.target.value = "";
+            }}
           >
-            <span>Action</span>
-            <i
-              className={`fas fa-chevron-down ${
-                dropdownOpen === row.id ? "transform rotate-180" : ""
-              }`}
-            ></i>
-          </button>
-
-          {dropdownOpen === row.id && (
-            <div
-              ref={dropdownRef}
-              className="absolute right-0 mt-2 w-48 bg-white border rounded shadow-lg opacity-100 pointer-events-auto z-50"
-            >
-              <ul className="list-none p-0 m-0">
-                <li>
-                  <button
-                    onClick={() => navigate(`/admin/subscription/edit/${row.id}`)}
-                    className="w-full text-left py-2 px-4 hover:bg-gray-200 transition duration-300"
-                  >
-                    <i className="fas fa-edit mr-2"></i> Edit Subscription
-                  </button>
-                </li>
-                <li>
-                  <button
-                    onClick={() => handleDeleteSubscription(row.id)}
-                    className="w-full text-left py-2 px-4 hover:bg-gray-200 transition duration-300 text-red-500"
-                  >
-                    <i className="fas fa-trash-alt mr-2"></i> Delete
-                  </button>
-                </li>
-              </ul>
-            </div>
-          )}
+            <option value="">Action</option>
+            <option value="edit">✏️ Edit</option>
+            <option value="delete">🗑️ Delete</option>
+          </select>
         </div>
       ),
       center: true,
@@ -223,60 +282,67 @@ const Subscriptions = () => {
     <div className="bg-gray-100">
       <div className="flex flex-col lg:flex-row">
         <Sidebar />
-        
-          <main className="flex-1 p-6 space-y-6">
-            <header className="flex justify-between items-center flex-wrap gap-4">
-              <h1 className="text-3xl font-bold text-gray-800">Subscriptions</h1>
-              <Link
-                to={"/admin/subscription/create"}
-                className="py-2 px-6 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
-              >
-                Add New &#43;
-              </Link>
-            </header>
 
-            <div className="bg-white p-6 rounded shadow">
-              <div className="flex flex-col sm:flex-row justify-between items-center mb-4">
-                <h2 className="text-xl font-medium text-gray-800">
-                  Subscriptions List
-                </h2>
-                <div className="relative mt-2 sm:mt-0 w-full sm:w-auto">
-                  <input
-                    type="text"
-                    placeholder="Search by title or price..."
-                    value={searchTerm}
-                    onChange={handleSearch}
-                    className="w-full p-3 pl-10 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+        <main className="flex-1 p-6 space-y-6">
+          <header className="flex justify-between items-center flex-wrap gap-4">
+            <h1 className="text-3xl font-bold text-gray-800">Subscriptions</h1>
+            <Link
+              to={"/admin/subscription/create"}
+              className="py-2 px-6 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+            >
+              Add New &#43;
+            </Link>
+          </header>
+
+          <div className="bg-white p-6 rounded shadow">
+            <div className="flex flex-col sm:flex-row justify-between items-center mb-4">
+              <h2 className="text-xl font-medium text-gray-800">
+                Subscriptions List
+              </h2>
+              <div className="relative mt-2 sm:mt-0 w-full sm:w-auto">
+                <input
+                  type="text"
+                  placeholder="Search by title or price..."
+                  value={searchTerm}
+                  onChange={handleSearch}
+                  className="w-full p-3 pl-10 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-4.35-4.35M16.5 10.5a6 6 0 11-12 0 6 6 0 0112 0z"
                   />
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M21 21l-4.35-4.35M16.5 10.5a6 6 0 11-12 0 6 6 0 0112 0z"
-                    />
-                  </svg>
-                </div>
+                </svg>
               </div>
-
-              <DataTable
-                columns={columns}
-                data={data}
-                pagination
-                highlightOnHover
-                striped
-                responsive
-                customStyles={customStyles}
-              />
             </div>
-          </main>
-        
+
+            {loading ? (
+              <p>Loading users...</p>
+            ) : error ? (
+              <p className="text-red-500">{error}</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <DataTable
+                  columns={columns}
+                  data={data}
+                  pagination
+                  highlightOnHover
+                  striped
+                  responsive
+                  customStyles={customStyles}
+                />
+              </div>
+            )}
+          </div>
+        </main>
       </div>
     </div>
   );

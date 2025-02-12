@@ -1,29 +1,50 @@
 import React, { useState } from "react";
 import Sidebar from "../../components/admin/Sidebar";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import API from "../../api";
+const BASE_URL = process.env.REACT_APP_BASE_URL;
+
+const durations = [
+  "1 Month",
+  "2 Month",
+  "3 Month",
+  "4 Month",
+  "5 Month",
+  "6 Month",
+  "7 Month",
+  "8 Month",
+  "9 Month",
+  "10 Month",
+  "11 Month",
+  "12 Month",
+];
 
 const SubscriptionForm = () => {
-  const [subscription, setSubscription] = useState({
+  const [formData, setFormData] = useState({
     title: "",
     duration: "",
     price: "",
-    features: [""],
+    features: [],
   });
 
   const [errors, setErrors] = useState({});
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
-  const validateForm = () => {
+  const validate = () => {
     const newErrors = {};
-    if (!subscription.title.trim()) {
+    if (!formData.title.trim()) {
       newErrors.title = "Title is required.";
     }
-    if (!subscription.duration.trim()) {
+    if (!formData.duration.trim()) {
       newErrors.duration = "Duration is required.";
     }
-    if (!subscription.price || isNaN(subscription.price)) {
+    if (!formData.price || isNaN(formData.price)) {
       newErrors.price = "Price must be a valid number.";
     }
-    subscription.features.forEach((feature, index) => {
+    formData.features.forEach((feature, index) => {
       if (!feature.trim()) {
         newErrors[`feature-${index}`] = "Feature cannot be empty.";
       }
@@ -32,36 +53,67 @@ const SubscriptionForm = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleInputChange = (field, value) => {
-    setSubscription({ ...subscription, [field]: value });
-  };
-
   const handleFeatureChange = (index, value) => {
-    const updatedFeatures = [...subscription.features];
+    const updatedFeatures = [...formData.features];
     updatedFeatures[index] = value;
-    setSubscription({ ...subscription, features: updatedFeatures });
+    setFormData({ ...formData, features: updatedFeatures });
   };
 
   const addFeature = () => {
-    setSubscription({
-      ...subscription,
-      features: [...subscription.features, ""],
+    setFormData({
+      ...formData,
+      features: [...formData.features, ""],
     });
   };
 
   const removeFeature = (index) => {
-    const updatedFeatures = subscription.features.filter((_, i) => i !== index);
-    setSubscription({ ...subscription, features: updatedFeatures });
+    const updatedFeatures = formData.features.filter((_, i) => i !== index);
+    setFormData({ ...formData, features: updatedFeatures });
   };
 
-  const handleSubmit = (e) => {
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validateForm()) {
-      console.log("Form submitted:", subscription);
-      // Perform API call or further actions here
-      alert("Subscription submitted successfully!");
-      setSubscription({ title: "", price: "", features: [""] });
+
+    if (!validate()) return;
+
+    setLoading(true);
+
+    try {
+      await API.post(`${BASE_URL}/api/admin/subscriptions`, {
+        title: formData.title,
+        price: formData.price,
+        duration: formData.duration,
+        features: JSON.stringify(formData.features),
+      });
+      navigate("/admin/subscriptions");
+      toast.success("Subscription Created Successfully!", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      setFormData({
+        title: "",
+        price: "",
+        duration: "",
+        features: [],
+      });
       setErrors({});
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "User Create failed. Try again.",
+        {
+          position: "top-right",
+          autoClose: 3000,
+        }
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -95,8 +147,9 @@ const SubscriptionForm = () => {
                 </label>
                 <input
                   type="text"
-                  value={subscription.title}
-                  onChange={(e) => handleInputChange("title", e.target.value)}
+                  name="title"
+                  value={formData.title}
+                  onChange={handleChange}
                   className={`mt-1 w-full p-3 border rounded ${
                     errors.title ? "border-red-500" : "border-gray-300"
                   }`}
@@ -114,8 +167,9 @@ const SubscriptionForm = () => {
                 </label>
                 <input
                   type="text"
-                  value={subscription.price}
-                  onChange={(e) => handleInputChange("price", e.target.value)}
+                  name="price"
+                  value={formData.price}
+                  onChange={handleChange}
                   className={`mt-1 w-full p-3 border rounded ${
                     errors.price ? "border-red-500" : "border-gray-300"
                   }`}
@@ -126,32 +180,29 @@ const SubscriptionForm = () => {
                 )}
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Duration
+              {/* Duration Dropdown */}
+              <div className="mb-4">
+                <label
+                  htmlFor="duration"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Duration <span className="text-red-500">*</span>
                 </label>
                 <select
-                  value={subscription.duration}
-                  onChange={(e) =>
-                    handleInputChange("duration", e.target.value)
-                  }
-                  className={`mt-1 w-full p-3 border rounded ${
+                  id="duration"
+                  name="duration"
+                  value={formData.duration}
+                  onChange={handleChange}
+                  className={`w-full px-4 py-2 border rounded-lg ${
                     errors.duration ? "border-red-500" : "border-gray-300"
-                  }`}
+                  } focus:outline-none focus:ring focus:ring-blue-300`}
                 >
-                  <option value="">Select Duration</option>
-                  <option value="1">1 Month</option>
-                  <option value="2">2 Month</option>
-                  <option value="3">3 Month</option>
-                  <option value="4">4 Month</option>
-                  <option value="5">5 Month</option>
-                  <option value="6">6 Month</option>
-                  <option value="7">7 Month</option>
-                  <option value="8">8 Month</option>
-                  <option value="9">9 Month</option>
-                  <option value="10">10 Month</option>
-                  <option value="11">11 Month</option>
-                  <option value="12">12 Month</option>
+                  <option value="">Select your duration</option>
+                  {durations.map((duration, index) => (
+                    <option key={index} value={duration}>
+                      {duration}
+                    </option>
+                  ))}
                 </select>
                 {errors.duration && (
                   <p className="text-red-500 text-sm mt-1">{errors.duration}</p>
@@ -163,10 +214,11 @@ const SubscriptionForm = () => {
                 <label className="block text-sm font-medium text-gray-700">
                   Features
                 </label>
-                {subscription.features.map((feature, index) => (
+                {formData.features.map((feature, index) => (
                   <div key={index} className="flex items-center gap-2 mb-2">
                     <input
                       type="text"
+                      name="feature"
                       value={feature}
                       onChange={(e) =>
                         handleFeatureChange(index, e.target.value)
@@ -178,7 +230,7 @@ const SubscriptionForm = () => {
                       }`}
                       placeholder={`Feature ${index + 1}`}
                     />
-                    {subscription.features.length > 1 && (
+                    {formData.features.length > 1 && (
                       <button
                         type="button"
                         onClick={() => removeFeature(index)}
@@ -205,8 +257,9 @@ const SubscriptionForm = () => {
               <button
                 type="submit"
                 className="w-full py-2 px-4 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+                disabled={loading}
               >
-                Submit
+                {loading ? "Submit..." : "Submit"}
               </button>
             </form>
           </div>

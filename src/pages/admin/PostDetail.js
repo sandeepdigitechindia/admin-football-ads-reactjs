@@ -1,28 +1,65 @@
 import React, { useState, useEffect } from "react";
-import { Link,useParams,useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import Sidebar from "../../components/admin/Sidebar";
-import Swal from "sweetalert2";
 import API from "../../api";
+const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 const PostDetail = () => {
   const { id } = useParams();
   const [showMore, setShowMore] = React.useState(false);
 
+  const [formData, setFormData] = useState({
+    title: "",
+    image: null,
+    description: "",
+    position: "",
+    salary: "",
+    location: "",
+    date: "",
+    status: "",
+    club_name: "",
+    club_logo: "",
+  });
+  // Fetch user data from API
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await API.get(`/api/admin/posts/${id}`);
+        const postData = response.data;
+        setFormData({
+          title: postData.title || "",
+          description: postData.description || "",
+          position: postData.position || "",
+          salary: postData.salary || "",
+          location: postData.location || "",
+          image: postData.image || null,
+          date: postData.createdAt,
+          status: postData.status,
+          club_name: postData.userId?.club_name || "",
+          club_logo: postData.userId?.club_logo || "",
+        });
+      } catch (error) {
+        console.error("Error fetching post data:", error);
+      }
+    };
+
+    if (id) fetchUser();
+  }, [id]);
+
   // Mock data; replace with actual API call if needed
   const job = {
     id: id,
-    title: "Software Engineer",
-    image: "/post/post.jpg",
-    description:
-      "We are looking for a talented Software Engineer to join our team. You will be responsible for developing and maintaining high-quality software applications.",
-    position: "Full-Time",
-    salary: "$80,000 - $100,000 per year",
-    location: "San Francisco, CA, USA",
-    date: "Jan 15, 2025",
-    status: "Published",
+    title: formData.title,
+    image: BASE_URL + formData.image || "/post/post.jpg",
+    description: formData.description,
+    position: formData.position,
+    salary: formData.salary,
+    location: formData.location,
+    date: formData.date,
+    status: formData.status,
     company: {
-      name: "Tech Innovators Inc.",
-      logo: "/common/club.png",
+      name: formData.club_name,
+      logo: BASE_URL + formData.club_logo,
       location: "San Francisco, CA, USA",
       subDescription:
         "Tech Innovators Inc. is a leading tech company that builds innovative solutions to solve real-world problems.",
@@ -42,7 +79,6 @@ const PostDetail = () => {
             <h1 className="text-4xl font-extrabold text-gray-900">
               Job Details
             </h1>
-           
           </header>
 
           {/* Job Details Section */}
@@ -74,27 +110,26 @@ const PostDetail = () => {
                     {job.location}
                   </p>
                   <p className="text-gray-800 font-medium">
-                <strong className="font-semibold">Posted on:</strong> {job.date}
-              </p>
-              <p
-                className={`font-semibold text-lg ${
-                  job.status === "Published"
-                    ? "text-green-600"
-                    : job.status === "Draft"
-                    ? "text-yellow-600"
-                    : "text-red-600"
-                }`}
-              >
-                Status: {job.status}
-              </p>
+                    <strong className="font-semibold">Posted on:</strong>{" "}
+                    {job.date}
+                  </p>
+                  <p
+                    className={`font-semibold text-lg ${
+                      job.status === "Published"
+                        ? "text-green-600"
+                        : job.status === "Draft"
+                        ? "text-yellow-600"
+                        : "text-red-600"
+                    }`}
+                  >
+                    Status: {job.status}
+                  </p>
                 </div>
               </div>
             </div>
 
             {/* Job Status and Date */}
-            <div className="flex flex-wrap justify-between items-center">
-              
-            </div>
+            <div className="flex flex-wrap justify-between items-center"></div>
           </section>
 
           {/* Company Details Section */}

@@ -119,7 +119,6 @@ const PostForm = () => {
 
       // Append text fields
       formDataToSend.append("title", formData.title);
-      formDataToSend.append("image", formData.image);
       formDataToSend.append("description", formData.description);
       formDataToSend.append("position", formData.position);
       formDataToSend.append("salary", formData.salary);
