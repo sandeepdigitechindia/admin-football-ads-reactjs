@@ -3,7 +3,7 @@ import Sidebar from "../../components/admin/Sidebar";
 import { Link, useNavigate } from "react-router-dom";
 import DataTable from "react-data-table-component";
 import Swal from "sweetalert2";
-import { toast } from "react-toastify";
+// import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import API from "../../api";
 const BASE_URL = process.env.REACT_APP_BASE_URL;

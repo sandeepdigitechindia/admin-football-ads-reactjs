@@ -1,25 +1,46 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import Sidebar from "../../components/admin/Sidebar";
-import { Link } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import API from "../../api";
+const BASE_URL = process.env.REACT_APP_BASE_URL;;
 
 const ServiceForm = () => {
-  const [service, setService] = useState({
+  const { id } = useParams();
+  const [formData, setFormData] = useState({
     title: "",
     description: "",
     video_link: "",
   });
 
   const [errors, setErrors] = useState({});
+    const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
 
-  const validateForm = () => {
+      // Fetch user data from API
+  useEffect(() => {
+    const fetchService = async () => {
+      try {
+        const response = await API.get(`/api/admin/services/${id}`);
+        setFormData(response.data);
+      } catch (error) {
+        console.error("Error fetching service data:", error);
+      }
+    };
+
+    if (id) fetchService();
+  }, [id]);
+
+  const validate = () => {
     const newErrors = {};
-    if (!service.title.trim()) {
+    if (!formData.title.trim()) {
       newErrors.title = "Title is required.";
     }
-    if (!service.description.trim()) {
+    if (!formData.description.trim()) {
       newErrors.description = "Description is required.";
     }
-    if (!service.video_link || isNaN(service.video_link)) {
+    if (!formData.video_link.trim()) {
       newErrors.video_link = "Video Link is required.";
     }
 
@@ -27,18 +48,43 @@ const ServiceForm = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleInputChange = (field, value) => {
-    setService({ ...service, [field]: value });
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validateForm()) {
-      console.log("Form submitted:", service);
-      // Perform API call or further actions here
-      alert("Service submitted successfully!");
-      setService({ title: "", description: "", video_link: "" });
+    if (!validate()) return;
+
+    setLoading(true);
+
+    try {
+      const updatedData = {
+        title: formData.title,
+        description: formData.description,
+        video_link: formData.video_link
+      };
+
+      await API.put(`${BASE_URL}/api/admin/services/${id}`, updatedData);
+      navigate("/admin/services");
+      toast.success("Service Updated Successfully!", {
+        position: "top-right",
+        autoClose: 3000,
+      });
       setErrors({});
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "Service Update failed. Try again.",
+        {
+          position: "top-right",
+          autoClose: 3000,
+        }
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -72,8 +118,9 @@ const ServiceForm = () => {
                 </label>
                 <input
                   type="text"
-                  value={service.title}
-                  onChange={(e) => handleInputChange("title", e.target.value)}
+                  name="title"
+                  value={formData.title}
+                  onChange={handleChange}
                   className={`mt-1 w-full p-3 border rounded ${
                     errors.title ? "border-red-500" : "border-gray-300"
                   }`}
@@ -91,10 +138,9 @@ const ServiceForm = () => {
                 </label>
                 <input
                   type="text"
-                  value={service.description}
-                  onChange={(e) =>
-                    handleInputChange("description", e.target.value)
-                  }
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
                   className={`mt-1 w-full p-3 border rounded ${
                     errors.description ? "border-red-500" : "border-gray-300"
                   }`}
@@ -114,10 +160,9 @@ const ServiceForm = () => {
                 </label>
                 <input
                   type="text"
-                  value={service.video_link}
-                  onChange={(e) =>
-                    handleInputChange("video_link", e.target.value)
-                  }
+                  name="video_link"
+                  value={formData.video_link}
+                  onChange={handleChange}
                   className={`mt-1 w-full p-3 border rounded ${
                     errors.video_link ? "border-red-500" : "border-gray-300"
                   }`}
@@ -134,8 +179,9 @@ const ServiceForm = () => {
               <button
                 type="submit"
                 className="w-full py-2 px-4 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+                disabled={loading}
               >
-                Submit
+                {loading ? "Register..." : "Register"}
               </button>
             </form>
           </div>
