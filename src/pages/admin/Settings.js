@@ -1,5 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "../../components/admin/Sidebar";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import API from "../../api";
+const BASE_URL = process.env.REACT_APP_BASE_URL;
 // Sample countries and roles
 const countries = [
   "United States",
@@ -12,8 +16,8 @@ const countries = [
 const Settings = () => {
   const [activeTab, setActiveTab] = useState("profile");
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
+    first_name: "",
+    last_name: "",
     email: "",
     phone: "",
     country: "",
@@ -21,24 +25,129 @@ const Settings = () => {
     confirmPassword: "",
     currentPassword: "",
     profilePicture: null,
-    siteName: "",
-    siteLogo: null,
+    site_name: "",
+    site_logo: null,
+    home_page_video: null,
+    home_page_title: "",
+    home_page_subtitle: "",
+    official_mail: "",
+    official_number: "",
+    official_address: "",
+    facebook_link: "",
+    twitter_link: "",
+    instagram_link: "",
+    linkedin_link: "",
+    about_page_banner: null,
+    contact_page_banner: null,
+    about_page_content: "",
   });
 
+  const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [admin, setAdmin] = useState(null);
+
+  useEffect(() => {
+    const fetchAdminId = async () => {
+      try {
+        const response = await API.get("/api/admin/profile");
+        // Ensure the response is an array
+
+        const adminFromAPI = {
+          id: response.data.user.id,
+          role: response.data.user.role,
+        };
+
+        setAdmin(adminFromAPI);
+      } catch (error) {
+        console.error("Error fetching admin:", error);
+      }
+    };
+
+    fetchAdminId();
+  }, []);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await API.get(
+          "/api/admin/settings/67a34a95a6870c076223ca18"
+        );
+        // Ensure the response is an array
+
+        const getData = response.data;
+
+        setFormData({
+          site_name: getData.site_name || "",
+          home_page_title: getData.home_page_title || "",
+          home_page_subtitle: getData.home_page_subtitle || "",
+          about_page_content: getData.about_page_content || "",
+
+          official_mail: getData.official_mail || "",
+          official_number: getData.official_number || "",
+          official_address: getData.official_address || "",
+
+          facebook_link: getData.facebook_link || "",
+          twitter_link: getData.twitter_link || "",
+          instagram_link: getData.instagram_link || "",
+          linkedin_link: getData.linkedin_link || "",
+
+          site_logo: getData.site_logo ? BASE_URL + getData.site_logo : null,
+          home_page_video: getData.home_page_video
+            ? BASE_URL + getData.home_page_video
+            : null,
+          about_page_banner: getData.about_page_banner
+            ? BASE_URL + getData.about_page_banner
+            : null,
+          contact_page_banner: getData.contact_page_banner
+            ? BASE_URL + getData.contact_page_banner
+            : null,
+        });
+      } catch (error) {
+        console.error("Error fetching admin:", error);
+      }
+    };
+
+    fetchSettings();
+  }, []);
+
+  useEffect(() => {
+    const fetchAdminProfile = async () => {
+      if (!admin?.id) return;
+
+      try {
+        const response = await API.get(`/api/admin/admins/${admin.id}`);
+        const getData = response.data;
+
+        setFormData({
+          first_name: getData.first_name || "",
+          last_name: getData.last_name || "",
+          email: getData.email || "",
+          phone: getData.phone || "",
+          country: getData.country || "",
+          password: getData.password || "",
+          profilePicture: getData.profile ? BASE_URL + getData.profile : null,
+        });
+      } catch (error) {
+        console.error("Error fetching admin profile:", error);
+      }
+    };
+
+    fetchAdminProfile();
+  }, [admin]);
+
   const handleTabChange = (tab) => setActiveTab(tab);
-  const [preview, setPreview] = useState(null); // For profile picture preview
+  const [preview, setPreview] = useState(null);
 
   const validate = () => {
     const newErrors = {};
 
     // Validation similar to the registration form, adjust based on whether it's password change or profile update
     if (activeTab === "profile") {
-      if (!formData.firstName.trim()) {
-        newErrors.firstName = "First Name is required.";
+      if (!formData.first_name.trim()) {
+        newErrors.first_name = "First Name is required.";
       }
-      if (!formData.lastName.trim()) {
-        newErrors.lastName = "Last Name is required.";
+      if (!formData.last_name.trim()) {
+        newErrors.last_name = "Last Name is required.";
       }
       if (!formData.email.trim()) {
         newErrors.email = "Email is required.";
@@ -76,11 +185,37 @@ const Settings = () => {
 
     if (activeTab === "setting") {
       // Setting validation
-      if (!formData.siteName.trim()) {
-        newErrors.siteName = "Site Name is required.";
+      if (!formData.site_name.trim()) {
+        newErrors.site_name = "Site Name is required.";
       }
 
-      if (!formData.siteLogo) newErrors.siteLogo = "Site Logo is required.";
+      if (!formData.site_logo) newErrors.site_logo = "Site Logo is required.";
+      if (!formData.home_page_video)
+        newErrors.home_page_video = "Home page video is required.";
+      if (!formData.about_page_banner)
+        newErrors.about_page_banner = "About page banner is required.";
+      if (!formData.about_page_content)
+        newErrors.about_page_content = "About page content is required.";
+      if (!formData.contact_page_banner)
+        newErrors.contact_page_banner = "Contact page banner is required.";
+      if (!formData.home_page_title.trim())
+        newErrors.home_page_title = "Home page title is required.";
+      if (!formData.home_page_subtitle.trim())
+        newErrors.home_page_subtitle = "Home page subtitle is required.";
+      if (!formData.official_mail.trim())
+        newErrors.official_mail = "Official mail is required.";
+      if (!formData.official_number.trim())
+        newErrors.official_number = "Official number is required.";
+      if (!formData.official_address.trim())
+        newErrors.official_address = "Official address is required.";
+      if (!formData.facebook_link.trim())
+        newErrors.facebook_link = "Facebook link is required.";
+      if (!formData.twitter_link.trim())
+        newErrors.twitter_link = "Twitter link is required.";
+      if (!formData.instagram_link.trim())
+        newErrors.instagram_link = "Instagram link is required.";
+      if (!formData.linkedin_link.trim())
+        newErrors.linkedin_link = "Linedin link is required.";
     }
 
     setErrors(newErrors);
@@ -98,29 +233,137 @@ const Settings = () => {
   };
 
   const handleFileChange = (e) => {
-    setFormData((prev) => ({ ...prev, siteLogo: e.target.files[0] }));
+    const { name, files } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: files[0],
+    }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validate()) {
-      console.log("Form Submitted:", formData);
-      alert("Changes saved!");
-      // Reset or update the form
-      setFormData({
-        firstName: "",
-        lastName: "",
-        email: "",
-        phone: "",
-        country: "",
-        password: "",
-        confirmPassword: "",
-        currentPassword: "",
-        profilePicture: null,
-        siteName: "",
-        siteLogo: null,
-      });
+    if (!validate()) return;
+
+    setLoading(true);
+
+    try {
+      const formDataToSend = new FormData();
+      if (activeTab === "profile") {
+        // Append text fields
+        formDataToSend.append("first_name", formData.first_name);
+        formDataToSend.append("last_name", formData.last_name);
+        formDataToSend.append("email", formData.email);
+        formDataToSend.append("phone", formData.phone);
+        formDataToSend.append("country", formData.country);
+
+        // Append file only if it's selected
+        if (formData.profilePicture instanceof File) {
+          formDataToSend.append("profile", formData.profilePicture);
+        }
+
+        await API.put(
+          `${BASE_URL}/api/admin/admins/${admin.id}`,
+          formDataToSend,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+        toast.success("Admin Updated Successfully!", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+      }
+      if (activeTab === "password") {
+        // Only include password if it's not empty
+        if (formData.password.trim() !== "") {
+          formDataToSend.password = formData.password;
+        }
+
+        await API.put(
+          `${BASE_URL}/api/admin/admins/${admin.id}`,
+          formDataToSend,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+        toast.success("Password Changed Successfully!", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+      }
+      if (activeTab === "setting") {
+        // Append text fields
+        formDataToSend.append("site_name", formData.site_name);
+        formDataToSend.append("home_page_title", formData.home_page_title);
+        formDataToSend.append(
+          "home_page_subtitle",
+          formData.home_page_subtitle
+        );
+        formDataToSend.append(
+          "about_page_content",
+          formData.about_page_content
+        );
+        formDataToSend.append("official_mail", formData.official_mail);
+        formDataToSend.append("official_number", formData.official_number);
+        formDataToSend.append("official_address", formData.official_address);
+        formDataToSend.append("facebook_link", formData.facebook_link);
+        formDataToSend.append("instagram_link", formData.instagram_link);
+        formDataToSend.append("twitter_link", formData.twitter_link);
+        formDataToSend.append("linkedin_link", formData.linkedin_link);
+
+        // Append file only if it's selected
+        if (formData.site_logo instanceof File) {
+          formDataToSend.append("site_logo", formData.site_logo);
+        }
+
+        if (formData.home_page_video instanceof File) {
+          formDataToSend.append("home_page_video", formData.home_page_video);
+        }
+
+        if (formData.about_page_banner instanceof File) {
+          formDataToSend.append(
+            "about_page_banner",
+            formData.about_page_banner
+          );
+        }
+
+        if (formData.contact_page_banner instanceof File) {
+          formDataToSend.append(
+            "contact_page_banner",
+            formData.contact_page_banner
+          );
+        }
+
+        await API.put(
+          `${BASE_URL}/api/admin/settings/67a34a95a6870c076223ca18`,
+          formDataToSend,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+        toast.success("Settings Updated Successfully!", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+      }
+
       setErrors({});
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "Update failed. Try again.",
+        {
+          position: "top-right",
+          autoClose: 3000,
+        }
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -182,7 +425,11 @@ const Settings = () => {
                   <div className="relative w-32 h-32">
                     <label htmlFor="profilePicture" className="cursor-pointer">
                       <img
-                        src={preview || "/common/man.png"}
+                        src={
+                          preview ||
+                          formData.profilePicture ||
+                          "/common/man.png"
+                        }
                         alt="Profile Preview"
                         className="w-32 h-32 rounded-full object-cover border shadow"
                       />
@@ -209,25 +456,25 @@ const Settings = () => {
                   {/* First Name Field */}
                   <div className="w-1/2">
                     <label
-                      htmlFor="firstName"
+                      htmlFor="first_name"
                       className="block text-sm font-medium text-gray-700 mb-1"
                     >
                       First Name <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
-                      id="firstName"
-                      name="firstName"
-                      value={formData.firstName}
+                      id="first_name"
+                      name="first_name"
+                      value={formData.first_name}
                       onChange={handleChange}
                       className={`w-full px-4 py-2 border rounded-lg ${
-                        errors.firstName ? "border-red-500" : "border-gray-300"
+                        errors.first_name ? "border-red-500" : "border-gray-300"
                       } focus:outline-none focus:ring focus:ring-blue-300`}
                       placeholder="Enter your first name"
                     />
-                    {errors.firstName && (
+                    {errors.first_name && (
                       <p className="text-red-500 text-sm mt-1">
-                        {errors.firstName}
+                        {errors.first_name}
                       </p>
                     )}
                   </div>
@@ -235,25 +482,25 @@ const Settings = () => {
                   {/* Last Name Field */}
                   <div className="w-1/2">
                     <label
-                      htmlFor="lastName"
+                      htmlFor="last_name"
                       className="block text-sm font-medium text-gray-700 mb-1"
                     >
                       Last Name <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
-                      id="lastName"
-                      name="lastName"
-                      value={formData.lastName}
+                      id="last_name"
+                      name="last_name"
+                      value={formData.last_name}
                       onChange={handleChange}
                       className={`w-full px-4 py-2 border rounded-lg ${
-                        errors.lastName ? "border-red-500" : "border-gray-300"
+                        errors.last_name ? "border-red-500" : "border-gray-300"
                       } focus:outline-none focus:ring focus:ring-blue-300`}
                       placeholder="Enter your last name"
                     />
-                    {errors.lastName && (
+                    {errors.last_name && (
                       <p className="text-red-500 text-sm mt-1">
-                        {errors.lastName}
+                        {errors.last_name}
                       </p>
                     )}
                   </div>
@@ -341,8 +588,9 @@ const Settings = () => {
                 <button
                   type="submit"
                   className="bg-blue-600 text-white py-2 px-4 rounded-lg"
+                  disabled={loading}
                 >
-                  Save Changes
+                  {loading ? "Save Changes..." : "Save Changes"}
                 </button>
               </form>
             )}
@@ -383,7 +631,6 @@ const Settings = () => {
                     type="password"
                     id="password"
                     name="password"
-                    value={formData.password}
                     onChange={handleChange}
                     className={`w-full px-4 py-2 border rounded-lg ${
                       errors.password ? "border-red-500" : "border-gray-300"
@@ -428,8 +675,9 @@ const Settings = () => {
                 <button
                   type="submit"
                   className="bg-blue-600 text-white py-2 px-4 rounded-lg"
+                  disabled={loading}
                 >
-                  Change Password
+                  {loading ? "Change Password..." : "Change Password"}
                 </button>
               </form>
             )}
@@ -440,30 +688,30 @@ const Settings = () => {
 
                 <div className="mb-4">
                   <label
-                    htmlFor="siteName"
+                    htmlFor="site_name"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
                     Site Name <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
-                    id="siteName"
-                    name="siteName"
-                    value={formData.siteName}
+                    id="site_name"
+                    name="site_name"
+                    value={formData.site_name}
                     onChange={handleChange}
                     className={`w-full px-4 py-2 border rounded-lg ${
-                      errors.siteName ? "border-red-500" : "border-gray-300"
+                      errors.site_name ? "border-red-500" : "border-gray-300"
                     } focus:outline-none focus:ring focus:ring-blue-300`}
                     placeholder="Enter your site name"
                   />
-                  {errors.siteName && (
+                  {errors.site_name && (
                     <p className="text-red-500 text-sm mt-1">
-                      {errors.siteName}
+                      {errors.site_name}
                     </p>
                   )}
                 </div>
 
-                {/* siteLogo */}
+                {/* site_logo */}
                 <div className="mb-4">
                   <label className="block text-gray-700 font-medium mb-2">
                     Site Logo <span className="text-red-500">*</span>
@@ -471,123 +719,355 @@ const Settings = () => {
                   <input
                     type="file"
                     accept="image/*"
+                    name="site_logo"
                     onChange={handleFileChange}
                     className={`w-full p-3 border ${
-                      errors.siteLogo ? "border-red-500" : "border-gray-300"
+                      errors.site_logo ? "border-red-500" : "border-gray-300"
                     } rounded-lg`}
                   />
-                  {errors.siteLogo && (
+                  {errors.site_logo && (
                     <p className="text-red-500 text-sm mt-1">
-                      {errors.siteLogo}
+                      {errors.site_logo}
                     </p>
                   )}
+
+                  <img
+                    src={formData.site_logo}
+                    alt={`${formData.site_name}`}
+                    className="w-48 h-24 rounded-full mx-auto my-4"
+                  />
                 </div>
 
                 {/* Home Page Video */}
                 <div className="mb-4">
                   <label className="block text-gray-700 font-medium mb-2">
-                    Home Page Video
+                    Home Page Video <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="file"
                     accept="video/*"
                     onChange={handleFileChange}
-                    className="w-full p-3 border rounded-lg"
+                    className={`w-full p-3 border ${
+                      errors.home_page_video
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    } rounded-lg`}
                   />
+
+                  <video
+                    width="600"
+                    controls
+                    className="rounded mx-auto my-4"
+                  >
+                    <source src={formData.home_page_video} type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
+
+                  {errors.home_page_video && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.home_page_video}
+                    </p>
+                  )}
                 </div>
 
                 {/* Home Page Title */}
                 <div className="mb-4">
                   <label className="block text-gray-700 font-medium mb-2">
-                    Home Page Title
+                    Home Page Title <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
-                    name="homeTitle"
-                    value={formData.homeTitle}
+                    name="home_page_title"
+                    value={formData.home_page_title}
                     onChange={handleChange}
-                    className="w-full p-3 border rounded-lg"
+                    className={`w-full px-4 py-2 border rounded-lg ${
+                      errors.home_page_title
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    } focus:outline-none focus:ring focus:ring-blue-300`}
+                    placeholder="Enter home page title"
                   />
+                  {errors.home_page_title && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.home_page_title}
+                    </p>
+                  )}
                 </div>
 
                 {/* Home Page Sub Title */}
                 <div className="mb-4">
                   <label className="block text-gray-700 font-medium mb-2">
-                    Home Page Sub Title
+                    Home Page Sub Title <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
-                    name="homeSubTitle"
-                    value={formData.homeSubTitle}
+                    name="home_page_subtitle"
+                    value={formData.home_page_subtitle}
                     onChange={handleChange}
-                    className="w-full p-3 border rounded-lg"
+                    className={`w-full px-4 py-2 border rounded-lg ${
+                      errors.home_page_subtitle
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    } focus:outline-none focus:ring focus:ring-blue-300`}
+                    placeholder="Enter home page subtitle"
                   />
+                  {errors.home_page_subtitle && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.home_page_subtitle}
+                    </p>
+                  )}
                 </div>
 
                 {/* Official Email */}
                 <div className="mb-4">
                   <label className="block text-gray-700 font-medium mb-2">
-                    Official Email
+                    Official Email <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="email"
-                    name="officialEmail"
-                    value={formData.officialEmail}
+                    name="official_mail"
+                    value={formData.official_mail}
                     onChange={handleChange}
-                    className="w-full p-3 border rounded-lg"
+                    className={`w-full px-4 py-2 border rounded-lg ${
+                      errors.official_mail
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    } focus:outline-none focus:ring focus:ring-blue-300`}
+                    placeholder="Enter official mail"
                   />
+                  {errors.official_mail && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.official_mail}
+                    </p>
+                  )}
                 </div>
 
                 {/* Official Phone Number */}
                 <div className="mb-4">
                   <label className="block text-gray-700 font-medium mb-2">
-                    Official Phone Number
+                    Official Phone Number{" "}
+                    <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
-                    name="officialPhone"
-                    value={formData.officialPhone}
+                    name="official_number"
+                    value={formData.official_number}
                     onChange={handleChange}
-                    className="w-full p-3 border rounded-lg"
+                    className={`w-full px-4 py-2 border rounded-lg ${
+                      errors.official_number
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    } focus:outline-none focus:ring focus:ring-blue-300`}
+                    placeholder="Enter official number"
                   />
+                  {errors.official_number && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.official_number}
+                    </p>
+                  )}
                 </div>
 
                 {/* Official Address */}
                 <div className="mb-4">
                   <label className="block text-gray-700 font-medium mb-2">
-                    Official Address
+                    Official Address <span className="text-red-500">*</span>
                   </label>
                   <textarea
-                    name="officialAddress"
-                    value={formData.officialAddress}
+                    name="official_address"
+                    value={formData.official_address}
                     onChange={handleChange}
-                    className="w-full p-3 border rounded-lg"
+                    className={`w-full px-4 py-2 border rounded-lg ${
+                      errors.official_address
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    } focus:outline-none focus:ring focus:ring-blue-300`}
+                    placeholder="Enter official address"
                   ></textarea>
+                  {errors.official_address && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.official_address}
+                    </p>
+                  )}
+                </div>
+                {/* Social Media Links */}
+
+                <div className="mb-4">
+                  <label className="block text-gray-700 font-medium mb-2">
+                    Facebook Link <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="url"
+                    name="facebook_link"
+                    value={formData.facebook_link}
+                    onChange={handleChange}
+                    className={`w-full px-4 py-2 border rounded-lg ${
+                      errors.facebook_link
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    } focus:outline-none focus:ring focus:ring-blue-300`}
+                    placeholder="Enter facebook link"
+                  />
+                  {errors.facebook_link && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.facebook_link}
+                    </p>
+                  )}
                 </div>
 
-                {/* Social Media Links */}
-                {["Facebook", "Twitter", "Instagram", "LinkedIn"].map(
-                  (platform) => (
-                    <div key={platform} className="mb-4">
-                      <label className="block text-gray-700 font-medium mb-2">
-                        {platform} Link
-                      </label>
-                      <input
-                        type="url"
-                        name={`${platform.toLowerCase()}Link`}
-                        value={formData[`${platform.toLowerCase()}Link`]}
-                        onChange={handleChange}
-                        className="w-full p-3 border rounded-lg"
-                      />
-                    </div>
-                  )
-                )}
+                <div className="mb-4">
+                  <label className="block text-gray-700 font-medium mb-2">
+                    Twitter Link <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="url"
+                    name="twitter_link"
+                    value={formData.twitter_link}
+                    onChange={handleChange}
+                    className={`w-full px-4 py-2 border rounded-lg ${
+                      errors.twitter_link ? "border-red-500" : "border-gray-300"
+                    } focus:outline-none focus:ring focus:ring-blue-300`}
+                    placeholder="Enter twitter link"
+                  />
+                  {errors.twitter_link && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.twitter_link}
+                    </p>
+                  )}
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-gray-700 font-medium mb-2">
+                    Instagram Link <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="url"
+                    name="instagram_link"
+                    value={formData.instagram_link}
+                    onChange={handleChange}
+                    className={`w-full px-4 py-2 border rounded-lg ${
+                      errors.instagram_link
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    } focus:outline-none focus:ring focus:ring-blue-300`}
+                    placeholder="Enter instagram link"
+                  />
+                  {errors.instagram_link && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.instagram_link}
+                    </p>
+                  )}
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-gray-700 font-medium mb-2">
+                    Linedin Link <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="url"
+                    name="linkedin_link"
+                    value={formData.linkedin_link}
+                    onChange={handleChange}
+                    className={`w-full px-4 py-2 border rounded-lg ${
+                      errors.linkedin_link
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    } focus:outline-none focus:ring focus:ring-blue-300`}
+                    placeholder="Enter linkedin link"
+                  />
+                  {errors.linkedin_link && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.linkedin_link}
+                    </p>
+                  )}
+                </div>
+
+                {/* about_page_banner */}
+                <div className="mb-4">
+                  <label className="block text-gray-700 font-medium mb-2">
+                    About Page Banner <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    name="about_page_banner"
+                    onChange={handleFileChange}
+                    className={`w-full p-3 border ${
+                      errors.about_page_banner
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    } rounded-lg`}
+                  />
+                  {errors.about_page_banner && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.about_page_banner}
+                    </p>
+                  )}
+
+                  <img
+                    src={formData.about_page_banner}
+                    alt={`${formData.site_name}`}
+                    className="w-48 h-24 rounded-full mx-auto my-4"
+                  />
+                </div>
+
+                {/* About Page Content */}
+                <div className="mb-4">
+                  <label className="block text-gray-700 font-medium mb-2">
+                    About Page Content <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    name="about_page_content"
+                    value={formData.about_page_content}
+                    onChange={handleChange}
+                    className={`w-full px-4 py-2 border rounded-lg ${
+                      errors.about_page_content
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    } focus:outline-none focus:ring focus:ring-blue-300`}
+                    placeholder="Enter official address"
+                  ></textarea>
+                  {errors.about_page_content && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.about_page_content}
+                    </p>
+                  )}
+                </div>
+
+                {/* contact_page_banner */}
+                <div className="mb-4">
+                  <label className="block text-gray-700 font-medium mb-2">
+                    Contact Page Banner <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    name="contact_page_banner"
+                    onChange={handleFileChange}
+                    className={`w-full p-3 border ${
+                      errors.contact_page_banner
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    } rounded-lg`}
+                  />
+                  {errors.contact_page_banner && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.contact_page_banner}
+                    </p>
+                  )}
+
+                  <img
+                    src={formData.contact_page_banner}
+                    alt={`${formData.site_name}`}
+                    className="w-48 h-24 rounded-full mx-auto my-4"
+                  />
+                </div>
 
                 <button
                   type="submit"
                   className="bg-blue-600 text-white py-2 px-4 rounded-lg"
+                  disabled={loading}
                 >
-                  Update
+                  {loading ? "Update..." : "Update"}
                 </button>
               </form>
             )}

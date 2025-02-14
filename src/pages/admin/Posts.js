@@ -9,7 +9,7 @@ import API from "../../api";
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 const Posts = () => {
   
-const navigate = useNavigate();
+  const navigate = useNavigate();
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState([]);
