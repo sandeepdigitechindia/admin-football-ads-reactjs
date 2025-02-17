@@ -26,6 +26,10 @@ import AdminServices from "./pages/admin/Services";
 import AdminServiceForm from "./pages/admin/ServiceForm";
 import AdminServiceEdit from "./pages/admin/AdminServiceEdit";
 
+import AdminTestimonials from "./pages/admin/testimonials/Testimonials";
+import AdminTestimonialForm from "./pages/admin/testimonials/TestimonialForm";
+import AdminTestimonialEdit from "./pages/admin/testimonials/TestimonialEditForm";
+
 import AdminUsers from "./pages/admin/Users";
 import AdminUserForm from "./pages/admin/UserForm";
 import AdminUserView from "./pages/admin/AdminUserView";
@@ -154,6 +158,19 @@ const App = () => {
             <Route
               path="/admin/service/edit/:id"
               element={<ProtectedRoute element={<AdminServiceEdit />} />}
+            />
+
+<Route
+              path="/admin/testimonials"
+              element={<ProtectedRoute element={<AdminTestimonials />} />}
+            />
+            <Route
+              path="/admin/testimonial/create"
+              element={<ProtectedRoute element={<AdminTestimonialForm />} />}
+            />
+            <Route
+              path="/admin/testimonial/edit/:id"
+              element={<ProtectedRoute element={<AdminTestimonialEdit />} />}
             />
 
             <Route

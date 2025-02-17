@@ -37,6 +37,7 @@ const Settings = () => {
     twitter_link: "",
     instagram_link: "",
     linkedin_link: "",
+    home_page_banner: null,
     about_page_banner: null,
     contact_page_banner: null,
     about_page_content: "",
@@ -94,6 +95,9 @@ const Settings = () => {
           site_logo: getData.site_logo ? BASE_URL + getData.site_logo : null,
           home_page_video: getData.home_page_video
             ? BASE_URL + getData.home_page_video
+            : null,
+          home_page_banner: getData.home_page_banner
+            ? BASE_URL + getData.home_page_banner
             : null,
           about_page_banner: getData.about_page_banner
             ? BASE_URL + getData.about_page_banner
@@ -194,6 +198,8 @@ const Settings = () => {
         newErrors.home_page_video = "Home page video is required.";
       if (!formData.about_page_banner)
         newErrors.about_page_banner = "About page banner is required.";
+      if (!formData.home_page_banner)
+        newErrors.home_page_banner = "Home page banner is required.";
       if (!formData.about_page_content)
         newErrors.about_page_content = "About page content is required.";
       if (!formData.contact_page_banner)
@@ -322,6 +328,13 @@ const Settings = () => {
 
         if (formData.home_page_video instanceof File) {
           formDataToSend.append("home_page_video", formData.home_page_video);
+        }
+
+        if (formData.home_page_banner instanceof File) {
+          formDataToSend.append(
+            "home_page_banner",
+            formData.home_page_banner
+          );
         }
 
         if (formData.about_page_banner instanceof File) {
@@ -979,6 +992,35 @@ const Settings = () => {
                       {errors.linkedin_link}
                     </p>
                   )}
+                </div>
+
+                {/* home_page_banner */}
+                <div className="mb-4">
+                  <label className="block text-gray-700 font-medium mb-2">
+                    Home Page Banner <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    name="home_page_banner"
+                    onChange={handleFileChange}
+                    className={`w-full p-3 border ${
+                      errors.home_page_banner
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    } rounded-lg`}
+                  />
+                  {errors.home_page_banner && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.home_page_banner}
+                    </p>
+                  )}
+
+                  <img
+                    src={formData.home_page_banner}
+                    alt={`${formData.site_name}`}
+                    className="w-48 h-24 rounded-full mx-auto my-4"
+                  />
                 </div>
 
                 {/* about_page_banner */}

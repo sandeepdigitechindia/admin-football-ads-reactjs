@@ -107,7 +107,7 @@ const PostForm = () => {
       setErrors({});
     } catch (error) {
       toast.error(
-        error.response?.data?.message || "Club creation failed. Try again.",
+        error.response?.data?.message || "Post creation failed. Try again.",
         {
           position: "top-right",
           autoClose: 3000,

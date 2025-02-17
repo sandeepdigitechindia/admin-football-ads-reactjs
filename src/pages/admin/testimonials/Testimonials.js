@@ -1,14 +1,13 @@
-import React, { useState,useEffect } from "react";
-import Sidebar from "../../components/admin/Sidebar";
+import React, { useState, useEffect } from "react";
+import Sidebar from "../../../components/admin/Sidebar";
 import { Link, useNavigate } from "react-router-dom";
 import DataTable from "react-data-table-component";
 import Swal from "sweetalert2";
-// import { toast } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import API from "../../api";
+import API from "../../../api";
 const BASE_URL = process.env.REACT_APP_BASE_URL;
-const Posts = () => {
-  
+const Testimonials = () => {
   const navigate = useNavigate();
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -16,36 +15,38 @@ const Posts = () => {
   const [originalData, setOriginalData] = useState([]);
 
   useEffect(() => {
-    const fetchPosts = async () => {
+    const fetchTestimonials = async () => {
       try {
-        const response = await API.get("/api/admin/posts");
+        const response = await API.get("/api/admin/testimonials");
 
         // Ensure the response is an array
         if (!Array.isArray(response.data)) {
           throw new Error("Invalid response format");
         }
 
-        const postsFromAPI = response.data.map((post) => ({
-          id: post._id || "",
-          image: BASE_URL+post.userId.club_logo || "/common/club.png",
-          name: post.userId.club_name || "N/A",
-          title: post.title || "N/A",
-          applicantsCount: "5",
-          date: new Date(post.createdAt).toLocaleDateString("en-GB") || "N/A",
-          status: post.status,
+        const getFromAPI = response.data.map((testimonial) => ({
+          id: testimonial._id || "",
+          image: BASE_URL + testimonial.image || "/common/man.png",
+          name: testimonial.name || "N/A",
+          designation: testimonial.designation || "N/A",
+          comment: testimonial.comment || "N/A",
+          ratting: testimonial.ratting || "N/A",
+          status: testimonial.status === "true" ? "Active" : "Deactivate",
         }));
 
-        setData(postsFromAPI);
-        setOriginalData(postsFromAPI);
+        setData(getFromAPI);
+        setOriginalData(getFromAPI);
       } catch (error) {
-        console.error("Error fetching posts:", error);
-        setError(error.response?.data?.message || "Failed to fetch posts");
+        console.error("Error fetching testimonials:", error);
+        setError(
+          error.response?.data?.message || "Failed to fetch testimonials"
+        );
       } finally {
         setLoading(false);
       }
     };
 
-    fetchPosts();
+    fetchTestimonials();
   }, []);
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -57,16 +58,55 @@ const Posts = () => {
       setData(originalData);
     } else {
       const filtered = originalData.filter(
-        (post) =>
-          post.club_name.toLowerCase().includes(value) ||
-          post.title.toLowerCase().includes(value)
+        (testimonial) =>
+          testimonial.name.toLowerCase().includes(value) ||
+          testimonial.designation.toLowerCase().includes(value) ||
+          testimonial.comment.toLowerCase().includes(value)
       );
       setData(filtered);
     }
   };
 
-  // Handle Delete Post (e.g., delete from API or state)
-  const handleDeletePost = async (postId) => {
+  const handleStatusChange = async (testimonialId, newStatus) => {
+    try {
+      const updatedStatus = newStatus === "true";
+
+      const formData = new FormData();
+      formData.append("status", updatedStatus);
+
+      await API.put(`/api/admin/testimonials/${testimonialId}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      const updatedData = data.map((testimonial) =>
+        testimonial.id === testimonialId
+          ? {
+              ...testimonial,
+              status: newStatus === "true" ? "Active" : "Deactivate",
+            }
+          : testimonial
+      );
+      setData(updatedData);
+      toast.success("Testimonial status updated successfully!", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message ||
+          "Failed to update testimonial status. Try again.",
+        {
+          position: "top-right",
+          autoClose: 3000,
+        }
+      );
+    }
+  };
+
+  // Handle Delete Testimonial (e.g., delete from API or state)
+  const handleDeleteTestimonial = async (testimonialId) => {
     Swal.fire({
       title: "Are you sure?",
       text: "You won't be able to revert this!",
@@ -78,13 +118,21 @@ const Posts = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await API.delete(`/api/admin/posts/permanent/${postId}`);
-          setData((prevPosts) =>
-            prevPosts.filter((post) => post.id !== postId)
+          await API.delete(
+            `/api/admin/testimonials/permanent/${testimonialId}`
           );
-          Swal.fire("Deleted!", "Post has been deleted.", "success");
+          setData((prevTestimonials) =>
+            prevTestimonials.filter(
+              (testimonial) => testimonial.id !== testimonialId
+            )
+          );
+          Swal.fire("Deleted!", "Testimonial has been deleted.", "success");
         } catch (error) {
-          Swal.fire("Error!", "Failed to delete post. Try again.", "error");
+          Swal.fire(
+            "Error!",
+            "Failed to delete testimonial. Try again.",
+            "error"
+          );
         }
       }
     });
@@ -92,11 +140,11 @@ const Posts = () => {
 
   const columns = [
     {
-      name: "Club",
+      name: "Image",
       selector: (row) => (
         <img
           src={row.image}
-          alt="club"
+          alt="testimonial"
           className="w-10 h-10 rounded-full border border-gray-300"
         />
       ),
@@ -104,7 +152,7 @@ const Posts = () => {
       center: true,
     },
     {
-      name: "Club Name",
+      name: "Name",
       selector: (row) => row.name,
       sortable: true,
       cell: (row) => (
@@ -115,56 +163,52 @@ const Posts = () => {
       center: true,
     },
     {
-      name: "Job Title",
-      selector: (row) => row.title,
+      name: "Comment",
+      selector: (row) => row.comment,
       sortable: true,
       center: true,
     },
 
     {
-      name: "Date",
-      selector: (row) => row.date,
+      name: "Designation",
+      selector: (row) => row.designation,
       sortable: true,
-      cell: (row) => (
-        <div className="text-gray-500 text-center">{row.date}</div>
-      ),
       center: true,
     },
+    {
+      name: "Ratting",
+      selector: (row) => row.ratting,
+      sortable: true,
+      center: true,
+    },
+
     {
       name: "Status",
       selector: (row) => (
         <span
           className={`px-3 py-1 rounded-full text-sm font-medium ${
-            row.status === "Open"
+            row.status === "Active"
               ? "bg-green-100 text-green-700"
-              : row.status === "Close"
-              ? "bg-yellow-100 text-yellow-700"
-              : "bg-red-100 text-red-700"
-          } text-center`}
+              : "bg-gray-100 text-gray-700"
+          }`}
         >
           {row.status}
         </span>
       ),
-      sortable: true,
-      center: true,
     },
     {
-      name: "Applicants with Counts",
-      selector: (row) => row.applicantsCount,
-      sortable: true,
+      name: "Change Status",
       cell: (row) => (
-        <div className="text-sm text-gray-600 text-center">
-         
-          <div
-            className="inline-flex items-center justify-center w-8 h-8 bg-blue-500 text-white rounded-full cursor-pointer"
-            onClick={() => navigate(`/admin/post/applicants/${row.id}`)} 
-          >
-            {row.applicantsCount}
-          </div>{" "}
-          Applicants
-        </div>
+        <select
+          value={String(row.status)}
+          onChange={(e) => handleStatusChange(row.id, e.target.value)}
+          className="px-3 py-1 border rounded-md"
+        >
+          <option value="">Change</option>
+          <option value="true">Active</option>
+          <option value="false">Deactivate</option>
+        </select>
       ),
-      center: true,
     },
     {
       name: "Action",
@@ -175,11 +219,11 @@ const Posts = () => {
             onChange={(e) => {
               const action = e.target.value;
               if (action === "view") {
-                navigate(`/admin/post/view/${row.id}`);
+                navigate(`/admin/testimonial/view/${row.id}`);
               } else if (action === "edit") {
-                navigate(`/admin/post/edit/${row.id}`);
+                navigate(`/admin/testimonial/edit/${row.id}`);
               } else if (action === "delete") {
-                handleDeletePost(row.id);
+                handleDeleteTestimonial(row.id);
               }
               e.target.value = "";
             }}
@@ -187,9 +231,9 @@ const Posts = () => {
             <option value="" className="">
               Action
             </option>
-            <option value="view">👁️ View Post</option>
-            <option value="edit">✏️ Edit Post</option>
-            <option value="delete">🗑️ Delete Post</option>
+            <option value="view">👁️ View</option>
+            <option value="edit">✏️ Edit</option>
+            <option value="delete">🗑️ Delete</option>
           </select>
         </div>
       ),
@@ -255,12 +299,15 @@ const Posts = () => {
         <Sidebar />
 
         {/* Main Content */}
+        <div className="overflow-x-auto w-full">
         <main className="flex-1 p-6 space-y-6">
-          {/* Posts Header */}
+          {/* Testimonials Header */}
           <header className="flex justify-between items-center flex-wrap gap-4">
-            <h1 className="text-3xl font-bold text-gray-800">All Posts</h1>
+            <h1 className="text-3xl font-bold text-gray-800">
+              All Testimonials
+            </h1>
             <Link
-              to={"/admin/post/create"}
+              to={"/admin/testimonial/create"}
               className="py-2 px-6 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
             >
               Add New &#43;
@@ -270,7 +317,9 @@ const Posts = () => {
           <div className="bg-white p-6 rounded shadow">
             {/* Header with Search Input */}
             <div className="flex flex-col sm:flex-row justify-between items-center mb-4">
-              <h2 className="text-xl font-medium text-gray-800">All Posts</h2>
+              <h2 className="text-xl font-medium text-gray-800">
+                All Testimonials
+              </h2>
               <div className="relative mt-2 sm:mt-0 w-full sm:w-auto">
                 <input
                   type="text"
@@ -297,27 +346,28 @@ const Posts = () => {
             </div>
 
             {loading ? (
-                <p>Loading clubs...</p>
-              ) : error ? (
-                <p className="text-red-500">{error}</p>
-              ) : (
-                <div className="overflow-x-auto">
-                  <DataTable
-                    columns={columns}
-                    data={data}
-                    pagination
-                    highlightOnHover
-                    striped
-                    responsive
-                    customStyles={customStyles}
-                  />
-                </div>
-              )}
+              <p>Loading testimonials...</p>
+            ) : error ? (
+              <p className="text-red-500">{error}</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <DataTable
+                  columns={columns}
+                  data={data}
+                  pagination
+                  highlightOnHover
+                  striped
+                  responsive
+                  customStyles={customStyles}
+                />
+              </div>
+            )}
           </div>
         </main>
+        </div>
       </div>
     </div>
   );
 };
 
-export default Posts;
+export default Testimonials;

@@ -12,6 +12,7 @@ import {
   FaChevronDown,
   FaChevronUp,
   FaTools,
+  FaQuoteLeft ,
 } from "react-icons/fa";
 import { useState } from "react";
 import { toast } from "react-toastify";
@@ -63,6 +64,11 @@ const Sidebar = () => {
       name: "Services",
       link: "/admin/services",
       icon: <FaTools />,
+    },
+    {
+      name: "Testimonials",
+      link: "/admin/testimonials",
+      icon: <FaQuoteLeft />,
     },
     {
       name: "Transaction History",
