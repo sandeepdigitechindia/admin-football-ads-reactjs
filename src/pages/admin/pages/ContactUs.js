@@ -1,54 +1,54 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "../../../components/admin/Sidebar";
-import { Link, useNavigate } from "react-router-dom";
 import DataTable from "react-data-table-component";
+import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import API from "../../../api";
-const BASE_URL = process.env.REACT_APP_BASE_URL;
-const Testimonials = () => {
+const ContactUs = () => {
+
   const navigate = useNavigate();
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [data, setData] = useState([]);
-  const [originalData, setOriginalData] = useState([]);
+    const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [data, setData] = useState([]);
+    const [originalData, setOriginalData] = useState([]);
 
-  useEffect(() => {
-    const fetchTestimonials = async () => {
-      try {
-        const response = await API.get("/api/admin/testimonials");
-
-        // Ensure the response is an array
-        if (!Array.isArray(response.data)) {
-          throw new Error("Invalid response format");
+    useEffect(() => {
+      const fetchContactUs = async () => {
+        try {
+          const response = await API.get("/api/admin/pages/contact-us");
+  
+          // Ensure the response is an array
+          if (!Array.isArray(response.data)) {
+            throw new Error("Invalid response format");
+          }
+  
+          const getFromAPI = response.data.map((contact) => ({
+            id: contact._id || "",
+            name: contact.name || "N/A",
+            email: contact.email || "N/A",
+            number: contact.number || "N/A",
+            subject: contact.subject || "N/A",
+            message: contact.message || "N/A",
+            status: contact.status === "true" ? "Seen" : "Unseen",
+          }));
+  
+          setData(getFromAPI);
+          setOriginalData(getFromAPI);
+        } catch (error) {
+          console.error("Error fetching contact:", error);
+          setError(
+            error.response?.data?.message || "Failed to fetch contact"
+          );
+        } finally {
+          setLoading(false);
         }
-
-        const getFromAPI = response.data.map((testimonial) => ({
-          id: testimonial._id || "",
-          image: BASE_URL + testimonial.image || "/common/man.png",
-          name: testimonial.name || "N/A",
-          designation: testimonial.designation || "N/A",
-          comment: testimonial.comment || "N/A",
-          ratting: testimonial.ratting || "N/A",
-          status: testimonial.status === "true" ? "Active" : "Deactivate",
-        }));
-
-        setData(getFromAPI);
-        setOriginalData(getFromAPI);
-      } catch (error) {
-        console.error("Error fetching testimonials:", error);
-        setError(
-          error.response?.data?.message || "Failed to fetch testimonials"
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTestimonials();
-  }, []);
-
+      };
+  
+      fetchContactUs();
+    }, []);
+ 
   const [searchTerm, setSearchTerm] = useState("");
 
   const handleSearch = (e) => {
@@ -58,45 +58,45 @@ const Testimonials = () => {
       setData(originalData);
     } else {
       const filtered = originalData.filter(
-        (testimonial) =>
-          testimonial.name.toLowerCase().includes(value) ||
-          testimonial.designation.toLowerCase().includes(value) ||
-          testimonial.comment.toLowerCase().includes(value)
+        (contact) =>
+          contact.name.toLowerCase().includes(value) ||
+          contact.email.toLowerCase().includes(value) ||
+          contact.number.toLowerCase().includes(value)
       );
       setData(filtered);
     }
   };
 
-  const handleStatusChange = async (testimonialId, newStatus) => {
+  const handleStatusChange = async (contactId, newStatus) => {
     try {
       const updatedStatus = newStatus === "true";
 
       const formData = new FormData();
       formData.append("status", updatedStatus);
 
-      await API.put(`/api/admin/testimonials/${testimonialId}`, formData, {
+      await API.put(`/api/admin/pages/contact-us/${contactId}`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
 
-      const updatedData = data.map((testimonial) =>
-        testimonial.id === testimonialId
+      const updatedData = data.map((contact) =>
+        contact.id === contactId
           ? {
-              ...testimonial,
-              status: newStatus === "true" ? "Active" : "Deactivate",
+              ...contact,
+              status: newStatus === "true" ? "Seen" : "Unseen",
             }
-          : testimonial
+          : contact
       );
       setData(updatedData);
-      toast.success("Testimonial status updated successfully!", {
+      toast.success("Contact status updated successfully!", {
         position: "top-right",
         autoClose: 3000,
       });
     } catch (error) {
       toast.error(
         error.response?.data?.message ||
-          "Failed to update testimonial status. Try again.",
+          "Failed to update contact status. Try again.",
         {
           position: "top-right",
           autoClose: 3000,
@@ -105,8 +105,8 @@ const Testimonials = () => {
     }
   };
 
-  // Handle Delete Testimonial (e.g., delete from API or state)
-  const handleDeleteTestimonial = async (testimonialId) => {
+  // Handle Delete Contact Us (e.g., delete from API or state)
+  const handleDeleteContact = async (contactId) => {
     Swal.fire({
       title: "Are you sure?",
       text: "You won't be able to revert this!",
@@ -119,18 +119,18 @@ const Testimonials = () => {
       if (result.isConfirmed) {
         try {
           await API.delete(
-            `/api/admin/testimonials/permanent/${testimonialId}`
+            `/api/admin/pages/contact-us/${contactId}`
           );
-          setData((prevTestimonials) =>
-            prevTestimonials.filter(
-              (testimonial) => testimonial.id !== testimonialId
+          setData((prevContacts) =>
+            prevContacts.filter(
+              (contact) => contact.id !== contactId
             )
           );
-          Swal.fire("Deleted!", "Testimonial has been deleted.", "success");
+          Swal.fire("Deleted!", "Contact has been deleted.", "success");
         } catch (error) {
           Swal.fire(
             "Error!",
-            "Failed to delete testimonial. Try again.",
+            "Failed to delete contact. Try again.",
             "error"
           );
         }
@@ -139,18 +139,6 @@ const Testimonials = () => {
   };
 
   const columns = [
-    {
-      name: "Image",
-      selector: (row) => (
-        <img
-          src={row.image}
-          alt="testimonial"
-          className="w-10 h-10 rounded-full border border-gray-300"
-        />
-      ),
-      sortable: true,
-      center: true,
-    },
     {
       name: "Name",
       selector: (row) => row.name,
@@ -163,25 +151,24 @@ const Testimonials = () => {
       center: true,
     },
     {
-      name: "Comment",
-      selector: (row) => row.comment,
+      name: "Email",
+      selector: (row) => row.email,
       sortable: true,
       center: true,
     },
 
     {
-      name: "Designation",
-      selector: (row) => row.designation,
+      name: "Number",
+      selector: (row) => row.number,
       sortable: true,
       center: true,
     },
     {
-      name: "Ratting",
-      selector: (row) => row.ratting,
+      name: "Subject",
+      selector: (row) => row.subject,
       sortable: true,
       center: true,
     },
-
     {
       name: "Status",
       selector: (row) => (
@@ -218,12 +205,8 @@ const Testimonials = () => {
             className="p-2 mx-4 border rounded shadow-sm outline-none"
             onChange={(e) => {
               const action = e.target.value;
-              if (action === "view") {
-                navigate(`/admin/testimonial/view/${row.id}`);
-              } else if (action === "edit") {
-                navigate(`/admin/testimonial/edit/${row.id}`);
-              } else if (action === "delete") {
-                handleDeleteTestimonial(row.id);
+              if (action === "delete") {
+                handleDeleteContact(row.id);
               }
               e.target.value = "";
             }}
@@ -231,8 +214,6 @@ const Testimonials = () => {
             <option value="" className="">
               Action
             </option>
-            <option value="view">👁️ View</option>
-            <option value="edit">✏️ Edit</option>
             <option value="delete">🗑️ Delete</option>
           </select>
         </div>
@@ -294,36 +275,23 @@ const Testimonials = () => {
 
   return (
     <div className="bg-gray-100">
-      {/* Wrapper for Sidebar and Main Content */}
       <div className="flex flex-col lg:flex-row">
         <Sidebar />
-
-        {/* Main Content */}
-        <div className="overflow-x-auto w-full">
         <main className="flex-1 p-6 space-y-6">
-          {/* Testimonials Header */}
           <header className="flex justify-between items-center flex-wrap gap-4">
             <h1 className="text-3xl font-bold text-gray-800">
-              All Testimonials
+              Contact Us
             </h1>
-            <Link
-              to={"/admin/testimonial/create"}
-              className="py-2 px-6 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
-            >
-              Add New &#43;
-            </Link>
           </header>
-
           <div className="bg-white p-6 rounded shadow">
-            {/* Header with Search Input */}
             <div className="flex flex-col sm:flex-row justify-between items-center mb-4">
               <h2 className="text-xl font-medium text-gray-800">
-                All Testimonials
+              Contacts
               </h2>
               <div className="relative mt-2 sm:mt-0 w-full sm:w-auto">
                 <input
                   type="text"
-                  placeholder="Search by title..."
+                  placeholder="Search by name, email, or subscription..."
                   value={searchTerm}
                   onChange={handleSearch}
                   className="w-full p-3 pl-10 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -345,29 +313,20 @@ const Testimonials = () => {
               </div>
             </div>
 
-            {loading ? (
-              <p>Loading testimonials...</p>
-            ) : error ? (
-              <p className="text-red-500">{error}</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <DataTable
-                  columns={columns}
-                  data={data}
-                  pagination
-                  highlightOnHover
-                  striped
-                  responsive
-                  customStyles={customStyles}
-                />
-              </div>
-            )}
+            <DataTable
+              columns={columns}
+              data={data}
+              pagination
+              highlightOnHover
+              striped
+              responsive
+              customStyles={customStyles}
+            />
           </div>
         </main>
-        </div>
       </div>
     </div>
   );
 };
 
-export default Testimonials;
+export default ContactUs;

@@ -68,6 +68,31 @@ const Settings = () => {
   }, []);
 
   useEffect(() => {
+    const fetchAdminProfile = async () => {
+      if (!admin?.id) return;
+
+      try {
+        const response = await API.get(`/api/admin/admins/${admin.id}`);
+        const getData = response.data;
+
+        setFormData({
+          first_name: getData.first_name || "",
+          last_name: getData.last_name || "",
+          email: getData.email || "",
+          phone: getData.phone || "",
+          country: getData.country || "",
+          password: getData.password || "",
+          profilePicture: getData.profile ? BASE_URL + getData.profile : null,
+        });
+      } catch (error) {
+        console.error("Error fetching admin profile:", error);
+      }
+    };
+
+    fetchAdminProfile();
+  }, [admin]);
+
+  useEffect(() => {
     const fetchSettings = async () => {
       try {
         const response = await API.get(
@@ -76,7 +101,7 @@ const Settings = () => {
         // Ensure the response is an array
 
         const getData = response.data;
-
+        console.log(getData);
         setFormData({
           site_name: getData.site_name || "",
           home_page_title: getData.home_page_title || "",
@@ -114,30 +139,6 @@ const Settings = () => {
     fetchSettings();
   }, []);
 
-  useEffect(() => {
-    const fetchAdminProfile = async () => {
-      if (!admin?.id) return;
-
-      try {
-        const response = await API.get(`/api/admin/admins/${admin.id}`);
-        const getData = response.data;
-
-        setFormData({
-          first_name: getData.first_name || "",
-          last_name: getData.last_name || "",
-          email: getData.email || "",
-          phone: getData.phone || "",
-          country: getData.country || "",
-          password: getData.password || "",
-          profilePicture: getData.profile ? BASE_URL + getData.profile : null,
-        });
-      } catch (error) {
-        console.error("Error fetching admin profile:", error);
-      }
-    };
-
-    fetchAdminProfile();
-  }, [admin]);
 
   const handleTabChange = (tab) => setActiveTab(tab);
   const [preview, setPreview] = useState(null);

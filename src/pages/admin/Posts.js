@@ -171,7 +171,7 @@ const Posts = () => {
       cell: (row) => (
         <div className="text-center relative">
           <select
-            className="p-2 mx-4 border rounded bg-blue-600 text-white shadow-sm outline-none"
+            className="p-2 mx-4 border rounded shadow-sm outline-none"
             onChange={(e) => {
               const action = e.target.value;
               if (action === "view") {
@@ -187,9 +187,9 @@ const Posts = () => {
             <option value="" className="">
               Action
             </option>
-            <option value="view">👁️ View Post</option>
-            <option value="edit">✏️ Edit Post</option>
-            <option value="delete">🗑️ Delete Post</option>
+            <option value="view">👁️ View</option>
+            <option value="edit">✏️ Edit</option>
+            <option value="delete">🗑️ Delete</option>
           </select>
         </div>
       ),

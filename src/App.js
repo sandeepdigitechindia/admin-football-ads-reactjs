@@ -47,6 +47,7 @@ import AdminPostDetail from "./pages/admin/PostDetail";
 import AdminPostApplicant from "./pages/admin/AdminPostApplicant";
 
 import TransactionHistory from "./pages/admin/TransactionHistory";
+import ContactUs from "./pages/admin/pages/ContactUs";
 
 import isAuthenticated from "./authMiddleware";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -235,6 +236,11 @@ const App = () => {
             <Route
               path="/admin/transaction-history"
               element={<ProtectedRoute element={<TransactionHistory />} />}
+            />
+
+            <Route
+              path="/admin/contact-us"
+              element={<ProtectedRoute element={<ContactUs />} />}
             />
           </Routes>
         </DynamicWrapper>

@@ -12,7 +12,8 @@ import {
   FaChevronDown,
   FaChevronUp,
   FaTools,
-  FaQuoteLeft ,
+  FaQuoteLeft,
+  FaComments
 } from "react-icons/fa";
 import { useState } from "react";
 import { toast } from "react-toastify";
@@ -74,6 +75,11 @@ const Sidebar = () => {
       name: "Transaction History",
       link: "/admin/transaction-history",
       icon: <FaHistory />,
+    },
+    {
+      name: "Contact Us",
+      link: "/admin/contact-us",
+      icon: <FaComments />,
     },
     { name: "Settings", link: "/admin/settings", icon: <FaCogs /> },
     { name: "Logout", link: "#", icon: <FaSignOutAlt />, onClick: openModal }, // Added onClick for Logout
