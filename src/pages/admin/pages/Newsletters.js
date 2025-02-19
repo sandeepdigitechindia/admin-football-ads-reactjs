@@ -5,7 +5,8 @@ import Swal from "sweetalert2";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import API from "../../../api";
-const ContactUs = () => {
+const Newsletter = () => {
+
 
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -13,38 +14,34 @@ const ContactUs = () => {
     const [originalData, setOriginalData] = useState([]);
 
     useEffect(() => {
-      const fetchContactUs = async () => {
+      const fetchNewsletter = async () => {
         try {
-          const response = await API.get("/api/admin/contact");
+          const response = await API.get("/api/admin/newsletter");
   
           // Ensure the response is an array
           if (!Array.isArray(response.data)) {
             throw new Error("Invalid response format");
           }
   
-          const getFromAPI = response.data.map((contact) => ({
-            id: contact._id || "",
-            name: contact.name || "N/A",
-            email: contact.email || "N/A",
-            number: contact.number || "N/A",
-            subject: contact.subject || "N/A",
-            message: contact.message || "N/A",
-            status: contact.status === "true" ? "Seen" : "Unseen",
+          const getFromAPI = response.data.map((newsletter) => ({
+            id: newsletter._id || "",
+            email: newsletter.email || "N/A",
+            status: newsletter.status === "true" ? "Seen" : "Unseen",
           }));
   
           setData(getFromAPI);
           setOriginalData(getFromAPI);
         } catch (error) {
-          console.error("Error fetching contact:", error);
+          console.error("Error fetching newsletter:", error);
           setError(
-            error.response?.data?.message || "Failed to fetch contact"
+            error.response?.data?.message || "Failed to fetch newsletter"
           );
         } finally {
           setLoading(false);
         }
       };
   
-      fetchContactUs();
+      fetchNewsletter();
     }, []);
  
   const [searchTerm, setSearchTerm] = useState("");
@@ -56,16 +53,14 @@ const ContactUs = () => {
       setData(originalData);
     } else {
       const filtered = originalData.filter(
-        (contact) =>
-          contact.name.toLowerCase().includes(value) ||
-          contact.email.toLowerCase().includes(value) ||
-          contact.number.toLowerCase().includes(value)
+        (newsletter) =>
+          newsletter.email.toLowerCase().includes(value) 
       );
       setData(filtered);
     }
   };
 
-  const handleStatusChange = async (contactId, newStatus) => {
+  const handleStatusChange = async (newsletterId, newStatus) => {
     try {
       const updatedStatus = newStatus === "true";
     
@@ -73,29 +68,29 @@ const ContactUs = () => {
         status: updatedStatus,
       };
     
-      await API.put(`/api/admin/contact/${contactId}`, requestBody, {
+      await API.put(`/api/admin/newsletter/${newsletterId}`, requestBody, {
         headers: {
           "Content-Type": "application/json",
         },
       });
     
-      const updatedData = data.map((contact) =>
-        contact.id === contactId
+      const updatedData = data.map((newsletter) =>
+        newsletter.id === newsletterId
           ? {
-              ...contact,
+              ...newsletter,
               status: newStatus === "true" ? "Seen" : "Unseen",
             }
-          : contact
+          : newsletter
       );
       setData(updatedData);
-      toast.success("Contact status updated successfully!", {
+      toast.success("Newsletter status updated successfully!", {
         position: "top-right",
         autoClose: 3000,
       });
     } catch (error) {
       toast.error(
         error.response?.data?.message ||
-          "Failed to update contact status. Try again.",
+          "Failed to update newsletter status. Try again.",
         {
           position: "top-right",
           autoClose: 3000,
@@ -105,8 +100,8 @@ const ContactUs = () => {
     
   };
 
-  // Handle Delete Contact Us (e.g., delete from API or state)
-  const handleDeleteContact = async (contactId) => {
+  // Handle Delete newsletter Us (e.g., delete from API or state)
+  const handleDeleteNewsletter = async (newsletterId) => {
     Swal.fire({
       title: "Are you sure?",
       text: "You won't be able to revert this!",
@@ -119,18 +114,18 @@ const ContactUs = () => {
       if (result.isConfirmed) {
         try {
           await API.delete(
-            `/api/admin/contact/${contactId}`
+            `/api/admin/newsletter/${newsletterId}`
           );
-          setData((prevContacts) =>
-            prevContacts.filter(
-              (contact) => contact.id !== contactId
+          setData((prevnewsletters) =>
+            prevnewsletters.filter(
+              (newsletter) => newsletter.id !== newsletterId
             )
           );
-          Swal.fire("Deleted!", "Contact has been deleted.", "success");
+          Swal.fire("Deleted!", "Newsletter has been deleted.", "success");
         } catch (error) {
           Swal.fire(
             "Error!",
-            "Failed to delete contact. Try again.",
+            "Failed to delete newsletter. Try again.",
             "error"
           );
         }
@@ -138,34 +133,10 @@ const ContactUs = () => {
     });
   };
 
-  const columns = [
-    {
-      name: "Name",
-      selector: (row) => row.name,
-      sortable: true,
-      cell: (row) => (
-        <div className="font-semibold text-gray-700 text-center">
-          {row.name}
-        </div>
-      ),
-      center: true,
-    },
+  const columns = [ 
     {
       name: "Email",
       selector: (row) => row.email,
-      sortable: true,
-      center: true,
-    },
-
-    {
-      name: "Number",
-      selector: (row) => row.number,
-      sortable: true,
-      center: true,
-    },
-    {
-      name: "Subject",
-      selector: (row) => row.subject,
       sortable: true,
       center: true,
     },
@@ -206,7 +177,7 @@ const ContactUs = () => {
             onChange={(e) => {
               const action = e.target.value;
               if (action === "delete") {
-                handleDeleteContact(row.id);
+                handleDeleteNewsletter(row.id);
               }
               e.target.value = "";
             }}
@@ -280,13 +251,13 @@ const ContactUs = () => {
         <main className="flex-1 p-6 space-y-6">
           <header className="flex justify-between items-center flex-wrap gap-4">
             <h1 className="text-3xl font-bold text-gray-800">
-              Contact Us
+              Newsletters
             </h1>
           </header>
           <div className="bg-white p-6 rounded shadow">
             <div className="flex flex-col sm:flex-row justify-between items-center mb-4">
               <h2 className="text-xl font-medium text-gray-800">
-              Contacts
+              Newsletters
               </h2>
               <div className="relative mt-2 sm:mt-0 w-full sm:w-auto">
                 <input
@@ -312,22 +283,23 @@ const ContactUs = () => {
                 </svg>
               </div>
             </div>
+
             {loading ? (
-              <p>Loading contacts...</p>
+              <p>Loading newsletters...</p>
             ) : error ? (
               <p className="text-red-500">{error}</p>
             ) : (
               <div className="overflow-x-auto">
-            <DataTable
-              columns={columns}
-              data={data}
-              pagination
-              highlightOnHover
-              striped
-              responsive
-              customStyles={customStyles}
-            />
-            </div>
+                <DataTable
+                  columns={columns}
+                  data={data}
+                  pagination
+                  highlightOnHover
+                  striped
+                  responsive
+                  customStyles={customStyles}
+                />
+              </div>
             )}
           </div>
         </main>
@@ -336,4 +308,4 @@ const ContactUs = () => {
   );
 };
 
-export default ContactUs;
+export default Newsletter;

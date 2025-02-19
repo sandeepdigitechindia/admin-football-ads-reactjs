@@ -13,7 +13,8 @@ import {
   FaChevronUp,
   FaTools,
   FaQuoteLeft,
-  FaComments
+  FaComments,
+  FaEnvelope 
 } from "react-icons/fa";
 import { useState } from "react";
 import { toast } from "react-toastify";
@@ -80,6 +81,11 @@ const Sidebar = () => {
       name: "Contact Us",
       link: "/admin/contact-us",
       icon: <FaComments />,
+    },
+    {
+      name: "Newsletters",
+      link: "/admin/newsletters",
+      icon: <FaEnvelope />,
     },
     { name: "Settings", link: "/admin/settings", icon: <FaCogs /> },
     { name: "Logout", link: "#", icon: <FaSignOutAlt />, onClick: openModal }, // Added onClick for Logout

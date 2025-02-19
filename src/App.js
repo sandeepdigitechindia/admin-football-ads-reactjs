@@ -49,6 +49,8 @@ import AdminPostApplicant from "./pages/admin/AdminPostApplicant";
 import TransactionHistory from "./pages/admin/TransactionHistory";
 import ContactUs from "./pages/admin/pages/ContactUs";
 
+import Newsletters from "./pages/admin/pages/Newsletters";
+
 import isAuthenticated from "./authMiddleware";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -161,7 +163,7 @@ const App = () => {
               element={<ProtectedRoute element={<AdminServiceEdit />} />}
             />
 
-<Route
+            <Route
               path="/admin/testimonials"
               element={<ProtectedRoute element={<AdminTestimonials />} />}
             />
@@ -241,6 +243,11 @@ const App = () => {
             <Route
               path="/admin/contact-us"
               element={<ProtectedRoute element={<ContactUs />} />}
+            />
+
+            <Route
+              path="/admin/newsletters"
+              element={<ProtectedRoute element={<Newsletters />} />}
             />
           </Routes>
         </DynamicWrapper>
