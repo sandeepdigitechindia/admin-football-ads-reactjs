@@ -9,15 +9,17 @@ export default function ClubHeader() {
   const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
 
-  // Handle logout action
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
-    toast.success("You have been logged out.", {
-      position: "top-right",
-      autoClose: 3000,
-    });
-  };
+
+    // Handle logout action
+    const handleLogout = () => {
+      localStorage.removeItem("token");
+      localStorage.removeItem("role");
+      navigate("/");
+      toast.success("You have been logged out.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    };
 
   // Open modal
   const openModal = () => {

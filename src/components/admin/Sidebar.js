@@ -14,7 +14,7 @@ import {
   FaTools,
   FaQuoteLeft,
   FaComments,
-  FaEnvelope 
+  FaEnvelope,
 } from "react-icons/fa";
 import { useState } from "react";
 import { toast } from "react-toastify";
@@ -26,9 +26,12 @@ const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isUsersOpen, setIsUsersOpen] = useState(false);
   const [showModal, setShowModal] = useState(false);
+
+  // Handle logout action
   const handleLogout = () => {
     localStorage.removeItem("token");
-    navigate("/login");
+    localStorage.removeItem("role");
+    navigate("/");
     toast.success("You have been logged out.", {
       position: "top-right",
       autoClose: 3000,

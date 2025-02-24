@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import DataTable from "react-data-table-component";
 import Swal from "sweetalert2";
 // import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+// import "react-toastify/dist/ReactToastify.css";
 import API from "../../api";
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 const Posts = () => {
@@ -18,7 +18,7 @@ const Posts = () => {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const response = await API.get("/api/admin/posts");
+        const response = await API.get("/api/admin/posts?recent=true");
 
         // Ensure the response is an array
         if (!Array.isArray(response.data)) {

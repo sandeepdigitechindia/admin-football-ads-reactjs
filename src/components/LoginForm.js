@@ -51,7 +51,13 @@ const LoginForm = () => {
 
     try {
       const response = await axios.post(`${BASE_URL}/api/admin/login`, formData);
-      localStorage.setItem("token", response.data.token);
+      // Extract token and user role
+      const { token, admin } = response.data;
+
+      // Store token in local storage
+      localStorage.setItem("token", token);
+      localStorage.setItem("role", admin.role); 
+
       navigate("/admin/dashboard");
       toast.success("Login successful!", {
         position: "top-right",
