@@ -139,7 +139,6 @@ const Settings = () => {
     fetchSettings();
   }, []);
 
-
   const handleTabChange = (tab) => setActiveTab(tab);
   const [preview, setPreview] = useState(null);
 
@@ -332,10 +331,7 @@ const Settings = () => {
         }
 
         if (formData.home_page_banner instanceof File) {
-          formDataToSend.append(
-            "home_page_banner",
-            formData.home_page_banner
-          );
+          formDataToSend.append("home_page_banner", formData.home_page_banner);
         }
 
         if (formData.about_page_banner instanceof File) {
@@ -768,11 +764,7 @@ const Settings = () => {
                     } rounded-lg`}
                   />
 
-                  <video
-                    width="600"
-                    controls
-                    className="rounded mx-auto my-4"
-                  >
+                  <video width="600" controls className="rounded mx-auto my-4">
                     <source src={formData.home_page_video} type="video/mp4" />
                     Your browser does not support the video tag.
                   </video>

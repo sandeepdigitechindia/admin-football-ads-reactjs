@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Bar, Pie } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -44,14 +44,12 @@ const Dashboard = () => {
         }
 
         const postsFromAPI = response.data.map((data) => ({
-         
           title: data.title || "N/A",
           count: data.count || "N/A",
           backgroundColor: data.backgroundColor || "N/A",
           shadow: data.shadow || "N/A",
           darkShadow: data.darkShadow || "N/A",
           link: data.link || "N/A",
-         
         }));
 
         setStats(postsFromAPI);
@@ -65,7 +63,6 @@ const Dashboard = () => {
 
     fetchDashboard();
   }, []);
-
 
   const navigate = useNavigate();
   const [error, setError] = useState(null);
@@ -357,30 +354,33 @@ const Dashboard = () => {
           </header>
           {/* Cards Section */}
           {loading ? (
-              <p>Loading cards...</p>
-            ) : error ? (
-              <p className="text-red-500">{error}</p>
-            ) : (
-          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {stats.map((card, index) => (
-              <div
-                key={index}
-                className={`relative p-8 min-h-[160px] rounded-xl text-white transform transition duration-300 hover:-translate-y-2 hover:shadow-2xl ${card.shadow} dark:${card.darkShadow}`}
-                style={{ backgroundColor: card.backgroundColor }}
-              >
-                {/* Card Content */}
-                <h3 className="text-md font-semibold mb-2">{card.title}</h3>
-                <p className="text-3xl font-extrabold mb-3">{card.count}</p>
+            <p>Loading cards...</p>
+          ) : error ? (
+            <p className="text-red-500">{error}</p>
+          ) : (
+            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {stats.map((card, index) => (
+                <div
+                  key={index}
+                  className={`relative p-8 min-h-[160px] rounded-xl text-white transform transition duration-300 hover:-translate-y-2 hover:shadow-2xl ${card.shadow} dark:${card.darkShadow}`}
+                  style={{ backgroundColor: card.backgroundColor }}
+                >
+                  {/* Card Content */}
+                  <h3 className="text-md font-semibold mb-2">{card.title}</h3>
+                  <p className="text-3xl font-extrabold mb-3">{card.count}</p>
 
-                {/* Align button to bottom-right */}
-                <div className="absolute bottom-2 right-2">
-                  <Link to={card.link} className="bg-white text-gray-800 dark:bg-gray-700 dark:text-white py-1 px-3 rounded shadow hover:bg-gray-100 dark:hover:bg-gray-600 transition">
-                    View Details 
-                  </Link>
+                  {/* Align button to bottom-right */}
+                  <div className="absolute bottom-2 right-2">
+                    <Link
+                      to={card.link}
+                      className="bg-white text-gray-800 dark:bg-gray-700 dark:text-white py-1 px-3 rounded shadow hover:bg-gray-100 dark:hover:bg-gray-600 transition"
+                    >
+                      View Details
+                    </Link>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </section>
+              ))}
+            </section>
           )}
 
           {/* Total Revenue & Subscription Chart Section */}
