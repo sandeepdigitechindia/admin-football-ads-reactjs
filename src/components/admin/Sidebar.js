@@ -7,6 +7,7 @@ import {
   FaUsers,
   FaHistory,
   FaDollarSign,
+  FaMoneyBill,
   FaCogs,
   FaSignOutAlt,
   FaChevronDown,
@@ -64,6 +65,11 @@ const Sidebar = () => {
       name: "Subscriptions",
       link: "/admin/subscriptions",
       icon: <FaDollarSign />,
+    },
+    {
+      name: "User Subscriptions",
+      link: "/admin/user-subscriptions",
+      icon: <FaMoneyBill />,
     },
     {
       name: "Services",

@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import Sidebar from "../../components/admin/Sidebar";
+import Sidebar from "../../../components/admin/Sidebar";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import API from "../../api";
+import API from "../../../api";
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 const durations = [
@@ -21,7 +21,7 @@ const durations = [
   "12 Month",
 ];
 
-const SubscriptionForm = () => {
+const UserSubscriptionForm = () => {
   const [formData, setFormData] = useState({
     title: "",
     duration: "",
@@ -86,13 +86,13 @@ const SubscriptionForm = () => {
     setLoading(true);
 
     try {
-      await API.post(`${BASE_URL}/api/admin/subscriptions`, {
+      await API.post(`${BASE_URL}/api/admin/user-subscriptions`, {
         title: formData.title,
         price: formData.price,
         duration: formData.duration,
         features: JSON.stringify(formData.features),
       });
-      navigate("/admin/subscriptions");
+      navigate("/admin/user-subscriptions");
       toast.success("Subscription Created Successfully!", {
         position: "top-right",
         autoClose: 3000,
@@ -126,9 +126,9 @@ const SubscriptionForm = () => {
         {/* Main Content */}
         <main className="flex-1 p-6 space-y-6">
           <header className="flex justify-between items-center flex-wrap gap-4">
-            <h1 className="text-3xl font-bold text-gray-800">Subscriptions</h1>
+            <h1 className="text-3xl font-bold text-gray-800">User Subscriptions</h1>
             <Link
-              to={"/admin/subscriptions"}
+              to={"/admin/user-subscriptions"}
               className="py-2 px-6 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition"
             >
               &#8592; Back
@@ -136,7 +136,7 @@ const SubscriptionForm = () => {
           </header>
           <div className="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow">
             <h1 className="text-2xl font-bold text-gray-800 mb-6">
-              Create Subscription
+              Create User Subscription
             </h1>
 
             <form onSubmit={handleSubmit} className="">
@@ -268,4 +268,4 @@ const SubscriptionForm = () => {
     </div>
   );
 };
-export default SubscriptionForm;
+export default UserSubscriptionForm;

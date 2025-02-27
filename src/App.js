@@ -18,9 +18,13 @@ import ForgetPassword from "./pages/ForgetPassword";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminSettings from "./pages/admin/Settings";
 
-import AdminSubscriptions from "./pages/admin/Subscriptions";
-import AdminSubscriptionForm from "./pages/admin/SubscriptionForm";
-import AdminSubscriptionEdit from "./pages/admin/AdminSubscriptionEdit";
+import AdminSubscriptions from "./pages/admin/subscriptions/Subscriptions";
+import AdminSubscriptionForm from "./pages/admin/subscriptions/SubscriptionForm";
+import AdminSubscriptionEdit from "./pages/admin/subscriptions/AdminSubscriptionEdit";
+
+import AdminUserSubscriptions from "./pages/admin/usersubscriptions/UserSubscriptions";
+import AdminUserSubscriptionForm from "./pages/admin/usersubscriptions/UserSubscriptionForm";
+import AdminUserSubscriptionEdit from "./pages/admin/usersubscriptions/UserSubscriptionEdit";
 
 import AdminServices from "./pages/admin/Services";
 import AdminServiceForm from "./pages/admin/ServiceForm";
@@ -148,6 +152,19 @@ const App = () => {
             <Route
               path="/admin/subscription/edit/:id"
               element={<ProtectedRoute element={<AdminSubscriptionEdit />} />}
+            />
+
+            <Route
+              path="/admin/user-subscriptions"
+              element={<ProtectedRoute element={<AdminUserSubscriptions />} />}
+            />
+            <Route
+              path="/admin/user-subscription/create"
+              element={<ProtectedRoute element={<AdminUserSubscriptionForm />} />}
+            />
+            <Route
+              path="/admin/user-subscription/edit/:id"
+              element={<ProtectedRoute element={<AdminUserSubscriptionEdit />} />}
             />
 
             <Route
