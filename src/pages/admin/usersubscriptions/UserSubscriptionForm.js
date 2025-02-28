@@ -26,7 +26,7 @@ const UserSubscriptionForm = () => {
     title: "",
     duration: "",
     price: "",
-    features: [],
+    features: [{ name: "", status: true }],
   });
 
   const [errors, setErrors] = useState({});
@@ -45,24 +45,24 @@ const UserSubscriptionForm = () => {
       newErrors.price = "Price must be a valid number.";
     }
     formData.features.forEach((feature, index) => {
-      if (!feature.trim()) {
-        newErrors[`feature-${index}`] = "Feature cannot be empty.";
+      if (!feature.name.trim()) {
+        newErrors[`feature-${index}`] = "Feature name cannot be empty.";
       }
     });
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleFeatureChange = (index, value) => {
+  const handleFeatureChange = (index, field, value) => {
     const updatedFeatures = [...formData.features];
-    updatedFeatures[index] = value;
+    updatedFeatures[index][field] = value;
     setFormData({ ...formData, features: updatedFeatures });
   };
 
   const addFeature = () => {
     setFormData({
       ...formData,
-      features: [...formData.features, ""],
+      features: [...formData.features, { name: "", status: true }],
     });
   };
 
@@ -90,7 +90,7 @@ const UserSubscriptionForm = () => {
         title: formData.title,
         price: formData.price,
         duration: formData.duration,
-        features: JSON.stringify(formData.features),
+        features: formData.features,
       });
       navigate("/admin/user-subscriptions");
       toast.success("Subscription Created Successfully!", {
@@ -101,7 +101,7 @@ const UserSubscriptionForm = () => {
         title: "",
         price: "",
         duration: "",
-        features: [],
+        features: [{ name: "", status: true }],
       });
       setErrors({});
     } catch (error) {
@@ -126,7 +126,9 @@ const UserSubscriptionForm = () => {
         {/* Main Content */}
         <main className="flex-1 p-6 space-y-6">
           <header className="flex justify-between items-center flex-wrap gap-4">
-            <h1 className="text-3xl font-bold text-gray-800">User Subscriptions</h1>
+            <h1 className="text-3xl font-bold text-gray-800">
+              User Subscriptions
+            </h1>
             <Link
               to={"/admin/user-subscriptions"}
               className="py-2 px-6 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition"
@@ -218,10 +220,9 @@ const UserSubscriptionForm = () => {
                   <div key={index} className="flex items-center gap-2 mb-2">
                     <input
                       type="text"
-                      name="feature"
-                      value={feature}
+                      value={feature.name}
                       onChange={(e) =>
-                        handleFeatureChange(index, e.target.value)
+                        handleFeatureChange(index, "name", e.target.value)
                       }
                       className={`w-full p-3 border rounded ${
                         errors[`feature-${index}`]
@@ -230,6 +231,16 @@ const UserSubscriptionForm = () => {
                       }`}
                       placeholder={`Feature ${index + 1}`}
                     />
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={feature.status}
+                        onChange={(e) =>
+                          handleFeatureChange(index, "status", e.target.checked)
+                        }
+                      />
+                      Enabled
+                    </label>
                     {formData.features.length > 1 && (
                       <button
                         type="button"
@@ -241,9 +252,6 @@ const UserSubscriptionForm = () => {
                     )}
                   </div>
                 ))}
-                {errors.feature && (
-                  <p className="text-red-500 text-sm mt-1">{errors.feature}</p>
-                )}
                 <button
                   type="button"
                   onClick={addFeature}

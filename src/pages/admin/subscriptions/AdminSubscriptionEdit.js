@@ -27,7 +27,7 @@ const AdminSubscriptionEdit = () => {
     title: "",
     duration: "",
     price: "",
-    features: [],
+    features: [{ name: "", status: true }],
   });
 
   const [errors, setErrors] = useState({});
@@ -44,7 +44,9 @@ const AdminSubscriptionEdit = () => {
           title: postData.title || "",
           price: postData.price || "",
           duration: postData.duration || "",
-          features: JSON.parse(postData.features) || "",
+          features: postData.features || [
+            { name: "", status: true },
+          ],
         });
         //setFormData(response.data);
       } catch (error) {
@@ -67,24 +69,27 @@ const AdminSubscriptionEdit = () => {
       newErrors.price = "Price must be a valid number.";
     }
     formData.features.forEach((feature, index) => {
-      if (!feature.trim()) {
-        newErrors[`feature-${index}`] = "Feature cannot be empty.";
+      if (!feature.name.trim()) {
+        newErrors[`feature-${index}`] = "Feature name cannot be empty.";
+      }
+      if (typeof feature.status !== "boolean") {
+        newErrors[`feature-${index}-status`] = "Feature status must be true or false.";
       }
     });
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleFeatureChange = (index, value) => {
+  const handleFeatureChange = (index, key, value) => {
     const updatedFeatures = [...formData.features];
-    updatedFeatures[index] = value;
+    updatedFeatures[index][key] = value;
     setFormData({ ...formData, features: updatedFeatures });
   };
 
   const addFeature = () => {
     setFormData({
       ...formData,
-      features: [...formData.features, ""],
+      features: [...formData.features, { name: "", status: true }],
     });
   };
 
@@ -111,7 +116,7 @@ const AdminSubscriptionEdit = () => {
         title: formData.title,
         price: formData.price,
         duration: formData.duration,
-        features: JSON.stringify(formData.features),
+        features: formData.features,
       };
 
       await API.put(`${BASE_URL}/api/admin/subscriptions/${id}`, updatedData);
@@ -237,9 +242,9 @@ const AdminSubscriptionEdit = () => {
                     <input
                       type="text"
                       name="feature"
-                      value={feature}
+                      value={feature.name}
                       onChange={(e) =>
-                        handleFeatureChange(index, e.target.value)
+                        handleFeatureChange(index, "name", e.target.value)
                       }
                       className={`w-full p-3 border rounded ${
                         errors[`feature-${index}`]
@@ -248,11 +253,19 @@ const AdminSubscriptionEdit = () => {
                       }`}
                       placeholder={`Feature ${index + 1}`}
                     />
+                    <input
+                      type="checkbox"
+                      checked={feature.status}
+                      onChange={(e) =>
+                        handleFeatureChange(index, "status", e.target.checked)
+                      }
+                    />
+                    <label className="text-sm">Enabled</label>
                     {formData.features.length > 1 && (
                       <button
                         type="button"
                         onClick={() => removeFeature(index)}
-                        className="w-[100px] py-2 px-4 bg-red-500 text-white rounded hover:bg-red-600 transition"
+                        className="py-2 px-4 bg-red-500 text-white rounded hover:bg-red-600 transition"
                       >
                         Remove
                       </button>

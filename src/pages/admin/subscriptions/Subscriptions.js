@@ -105,14 +105,14 @@ const Subscriptions = () => {
     try {
       const updatedStatus = newStatus === "true";
 
-      const formData = new FormData();
-      formData.append("status", updatedStatus);
-
-      await API.put(`/api/admin/subscriptions/${subscriptionId}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      await API.put(`/api/admin/subscriptions/${subscriptionId}`, 
+        { status: updatedStatus }, 
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       const updatedData = data.map((subscription) =>
         subscription.id === subscriptionId
@@ -154,10 +154,16 @@ const Subscriptions = () => {
       name: "Features",
       selector: (row) => {
         let features = [];
-        try {
-          features = JSON.parse(row.features);
-        } catch (error) {
-          console.error("Invalid JSON in features:", row.features, error);
+
+        // Ensure features is an array
+        if (Array.isArray(row.features)) {
+          features = row.features;
+        } else if (typeof row.features === "string") {
+          try {
+            features = JSON.parse(row.features); // Parse if stored as a string
+          } catch (error) {
+            console.error("Invalid JSON in features:", row.features, error);
+          }
         }
 
         return (
@@ -165,7 +171,8 @@ const Subscriptions = () => {
             {features.length > 0
               ? features.map((feature, index) => (
                   <li key={index} className="text-sm text-gray-700">
-                    - {feature}
+                    - {feature.name}{" "}
+                    {feature.status ? "(Enabled)" : "(Disabled)"}
                   </li>
                 ))
               : "No features available"}
