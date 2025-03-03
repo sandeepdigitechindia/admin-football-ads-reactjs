@@ -332,7 +332,7 @@ const Subscriptions = () => {
             </div>
 
             {loading ? (
-              <p>Loading users...</p>
+              <p>Loading subscriptions...</p>
             ) : error ? (
               <p className="text-red-500">{error}</p>
             ) : (

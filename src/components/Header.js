@@ -1,14 +1,43 @@
-import React, { useState } from "react";
+import React, { useEffect,useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
 import { UserCircleIcon } from "@heroicons/react/20/solid";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import API from "../api";
+const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 export default function ClubHeader() {
   const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
+  const [settingData, setSettingData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
+    useEffect(() => {
+      const fetchSettingData = async () => {
+        try {
+          const response = await API.get("/api/settings");
+          setSettingData(response.data);
+          setLoading(false);
+        } catch (error) {
+          console.error("Error fetching home data:", error);
+          setLoading(false);
+        }
+      };
+  
+      fetchSettingData();
+    }, []);
+    if (loading) {
+      return <div className="text-center text-lg font-bold">Loading...</div>;
+    }
+  
+    if (!settingData) {
+      return (
+        <div className="text-center text-lg font-bold text-red-500">
+          Error loading data.
+        </div>
+      );
+    }
 
     // Handle logout action
     const handleLogout = () => {
@@ -61,8 +90,8 @@ export default function ClubHeader() {
       >
         <div className="flex lg:flex-1">
           <Link to="/" className="-m-1.5 p-1.5">
-            <span className="sr-only">DB10</span>
-            <img alt="" src="/logo.png" className="h-8 w-auto" />
+            <span className="sr-only">{settingData.site_name}</span>
+            <img alt={settingData.site_name} src={BASE_URL + settingData.site_logo} className="h-8 w-auto" />
           </Link>
         </div>
 
@@ -74,6 +103,12 @@ export default function ClubHeader() {
             </PopoverButton>
             <PopoverPanel className="absolute right-0 z-10 mt-2 w-48 bg-white shadow-lg rounded-lg ring-1 ring-gray-900/5">
               <div className="p-2">
+              <Link
+                  to="/admin/profile"
+                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                >
+                  Profile
+                </Link>
                 <Link
                   to="/admin/settings"
                   className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"

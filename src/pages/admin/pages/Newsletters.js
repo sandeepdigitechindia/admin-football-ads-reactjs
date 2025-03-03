@@ -114,7 +114,7 @@ const Newsletter = () => {
       if (result.isConfirmed) {
         try {
           await API.delete(
-            `/api/admin/newsletter/${newsletterId}`
+            `/api/admin/newsletter/permanent/${newsletterId}`
           );
           setData((prevnewsletters) =>
             prevnewsletters.filter(

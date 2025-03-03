@@ -1,112 +1,55 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "../../../components/admin/Sidebar";
 import DataTable from "react-data-table-component";
+import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import API from "../../../api";
-const ContactUs = () => {
+const Faqs = () => {
+  const navigate = useNavigate();
 
-    const [error, setError] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [data, setData] = useState([]);
-    const [originalData, setOriginalData] = useState([]);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState([]);
+  const [originalData, setOriginalData] = useState([]);
 
-    useEffect(() => {
-      const fetchContactUs = async () => {
-        try {
-          const response = await API.get("/api/admin/contact");
-  
-          // Ensure the response is an array
-          if (!Array.isArray(response.data)) {
-            throw new Error("Invalid response format");
-          }
-  
-          const getFromAPI = response.data.map((contact) => ({
-            id: contact._id || "",
-            name: contact.name || "N/A",
-            email: contact.email || "N/A",
-            number: contact.number || "N/A",
-            subject: contact.subject || "N/A",
-            message: contact.message || "N/A",
-            status: contact.status === "true" ? "Seen" : "Unseen",
-          }));
-  
-          setData(getFromAPI);
-          setOriginalData(getFromAPI);
-        } catch (error) {
-          console.error("Error fetching contact:", error);
-          setError(
-            error.response?.data?.message || "Failed to fetch contact"
-          );
-        } finally {
-          setLoading(false);
+  useEffect(() => {
+    const fetchFaqs = async () => {
+      try {
+        const response = await API.get("/api/admin/faqs");
+
+        // Ensure the response is an array
+        if (!Array.isArray(response.data)) {
+          throw new Error("Invalid response format");
         }
-      };
-  
-      fetchContactUs();
-    }, []);
- 
+
+        const faqsFromAPI = response.data.map((faq) => ({
+          id: faq._id || "",
+          question: faq.question || "N/A",
+          answer: faq.answer || "N/A",
+          status: faq.status === "true" ? "Active" : "Deactivate",
+        }));
+
+        setData(faqsFromAPI);
+        setOriginalData(faqsFromAPI);
+      } catch (error) {
+        console.error("Error fetching faqs:", error);
+        setError(
+          error.response?.data?.message || "Failed to fetch faqs"
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFaqs();
+  }, []);
+
   const [searchTerm, setSearchTerm] = useState("");
 
-  const handleSearch = (e) => {
-    const value = e.target.value.toLowerCase();
-    setSearchTerm(value);
-    if (value === "") {
-      setData(originalData);
-    } else {
-      const filtered = originalData.filter(
-        (contact) =>
-          contact.name.toLowerCase().includes(value) ||
-          contact.email.toLowerCase().includes(value) ||
-          contact.number.toLowerCase().includes(value)
-      );
-      setData(filtered);
-    }
-  };
-
-  const handleStatusChange = async (contactId, newStatus) => {
-    try {
-      const updatedStatus = newStatus === "true";
-    
-      const requestBody = {
-        status: updatedStatus,
-      };
-    
-      await API.put(`/api/admin/contact/${contactId}`, requestBody, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-    
-      const updatedData = data.map((contact) =>
-        contact.id === contactId
-          ? {
-              ...contact,
-              status: newStatus === "true" ? "Seen" : "Unseen",
-            }
-          : contact
-      );
-      setData(updatedData);
-      toast.success("Contact status updated successfully!", {
-        position: "top-right",
-        autoClose: 3000,
-      });
-    } catch (error) {
-      toast.error(
-        error.response?.data?.message ||
-          "Failed to update contact status. Try again.",
-        {
-          position: "top-right",
-          autoClose: 3000,
-        }
-      );
-    }
-    
-  };
-
-  // Handle Delete Contact Us (e.g., delete from API or state)
-  const handleDeleteContact = async (contactId) => {
+  // Handle Delete Faq (e.g., delete from API or state)
+  const handleDeleteFaq = async (faqId) => {
     Swal.fire({
       title: "Are you sure?",
       text: "You won't be able to revert this!",
@@ -119,18 +62,20 @@ const ContactUs = () => {
       if (result.isConfirmed) {
         try {
           await API.delete(
-            `/api/admin/contact/permanent/${contactId}`
+            `/api/admin/faqs/permanent/${faqId}`
           );
-          setData((prevContacts) =>
-            prevContacts.filter(
-              (contact) => contact.id !== contactId
+          setData((prevFaqs) =>
+            prevFaqs.filter(
+              (faq) => faq.id !== faqId
             )
           );
-          Swal.fire("Deleted!", "Contact has been deleted.", "success");
+
+          Swal.fire("Deleted!", "Faq has been deleted.", "success");
         } catch (error) {
+          console.error("Error deleting faq:", error);
           Swal.fire(
             "Error!",
-            "Failed to delete contact. Try again.",
+            "Failed to delete faq. Try again.",
             "error"
           );
         }
@@ -138,43 +83,77 @@ const ContactUs = () => {
     });
   };
 
+  const handleSearch = (e) => {
+    const value = e.target.value.toLowerCase();
+    setSearchTerm(value);
+    if (value === "") {
+      setData(originalData);
+    } else {
+      const filtered = originalData.filter(
+        (faq) =>
+          faq.question.toLowerCase().includes(value) ||
+          faq.answer.toLowerCase().includes(value) 
+      );
+      setData(filtered);
+    }
+  };
+
+  const handleStatusChange = async (faqId, newStatus) => {
+    try {
+      const updatedStatus = newStatus === "true";
+
+      await API.put(`/api/admin/faqs/${faqId}`, 
+        { status: updatedStatus }, 
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const updatedData = data.map((faq) =>
+        faq.id === faqId
+          ? {
+              ...faq,
+              status: newStatus === "true" ? "Active" : "Deactivate",
+            }
+          : faq
+      );
+      setData(updatedData);
+      toast.success("Faq status updated successfully!", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message ||
+          "Failed to update faq status. Try again.",
+        {
+          position: "top-right",
+          autoClose: 3000,
+        }
+      );
+    }
+  };
+
   const columns = [
     {
-      name: "Name",
-      selector: (row) => row.name,
+      name: "Question",
+      selector: (row) => row.question,
       sortable: true,
-      cell: (row) => (
-        <div className="font-semibold text-gray-700 text-center">
-          {row.name}
-        </div>
-      ),
-      center: true,
     },
     {
-      name: "Email",
-      selector: (row) => row.email,
+      name: "Answer",
+      selector: (row) => row.answer,
       sortable: true,
-      center: true,
     },
 
-    {
-      name: "Number",
-      selector: (row) => row.number,
-      sortable: true,
-      center: true,
-    },
-    {
-      name: "Subject",
-      selector: (row) => row.subject,
-      sortable: true,
-      center: true,
-    },
     {
       name: "Status",
       selector: (row) => (
         <span
           className={`px-3 py-1 rounded-full text-sm font-medium ${
-            row.status === "Seen"
+            row.status === "Active"
               ? "bg-green-100 text-green-700"
               : "bg-gray-100 text-gray-700"
           }`}
@@ -192,8 +171,8 @@ const ContactUs = () => {
           className="px-3 py-1 border rounded-md"
         >
           <option value="">Change</option>
-          <option value="true">Seen</option>
-          <option value="false">Unseen</option>
+          <option value="true">Active</option>
+          <option value="false">Deactivate</option>
         </select>
       ),
     },
@@ -205,15 +184,16 @@ const ContactUs = () => {
             className="p-2 mx-4 border rounded shadow-sm outline-none"
             onChange={(e) => {
               const action = e.target.value;
-              if (action === "delete") {
-                handleDeleteContact(row.id);
+              if (action === "edit") {
+                navigate(`/admin/faq/edit/${row.id}`);
+              } else if (action === "delete") {
+                handleDeleteFaq(row.id);
               }
               e.target.value = "";
             }}
           >
-            <option value="" className="">
-              Action
-            </option>
+            <option value="">Action</option>
+            <option value="edit">✏️ Edit</option>
             <option value="delete">🗑️ Delete</option>
           </select>
         </div>
@@ -277,21 +257,27 @@ const ContactUs = () => {
     <div className="bg-gray-100">
       <div className="flex flex-col lg:flex-row">
         <Sidebar />
+
         <main className="flex-1 p-6 space-y-6">
           <header className="flex justify-between items-center flex-wrap gap-4">
-            <h1 className="text-3xl font-bold text-gray-800">
-              Contact Us
-            </h1>
+            <h1 className="text-3xl font-bold text-gray-800">Faqs</h1>
+            <Link
+              to={"/admin/faq/create"}
+              className="py-2 px-6 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+            >
+              Add New &#43;
+            </Link>
           </header>
+
           <div className="bg-white p-6 rounded shadow">
             <div className="flex flex-col sm:flex-row justify-between items-center mb-4">
               <h2 className="text-xl font-medium text-gray-800">
-              Contacts
+                Faqs List
               </h2>
               <div className="relative mt-2 sm:mt-0 w-full sm:w-auto">
                 <input
                   type="text"
-                  placeholder="Search by name, email, or subscription..."
+                  placeholder="Search by title or price..."
                   value={searchTerm}
                   onChange={handleSearch}
                   className="w-full p-3 pl-10 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -312,22 +298,23 @@ const ContactUs = () => {
                 </svg>
               </div>
             </div>
+
             {loading ? (
-              <p>Loading contacts...</p>
+              <p>Loading faqs...</p>
             ) : error ? (
               <p className="text-red-500">{error}</p>
             ) : (
               <div className="overflow-x-auto">
-            <DataTable
-              columns={columns}
-              data={data}
-              pagination
-              highlightOnHover
-              striped
-              responsive
-              customStyles={customStyles}
-            />
-            </div>
+                <DataTable
+                  columns={columns}
+                  data={data}
+                  pagination
+                  highlightOnHover
+                  striped
+                  responsive
+                  customStyles={customStyles}
+                />
+              </div>
             )}
           </div>
         </main>
@@ -336,4 +323,4 @@ const ContactUs = () => {
   );
 };
 
-export default ContactUs;
+export default Faqs;

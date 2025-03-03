@@ -17,6 +17,7 @@ import ForgetPassword from "./pages/ForgetPassword";
 
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminSettings from "./pages/admin/Settings";
+import AdminProfile from "./pages/admin/Profile";
 
 import AdminSubscriptions from "./pages/admin/subscriptions/Subscriptions";
 import AdminSubscriptionForm from "./pages/admin/subscriptions/SubscriptionForm";
@@ -33,6 +34,10 @@ import AdminServiceEdit from "./pages/admin/AdminServiceEdit";
 import AdminTestimonials from "./pages/admin/testimonials/Testimonials";
 import AdminTestimonialForm from "./pages/admin/testimonials/TestimonialForm";
 import AdminTestimonialEdit from "./pages/admin/testimonials/TestimonialEditForm";
+
+import AdminFaqs from "./pages/admin/faqs/Faqs";
+import AdminFaqForm from "./pages/admin/faqs/FaqForm";
+import AdminFaqEdit from "./pages/admin/faqs/AdminFaqEdit";
 
 import AdminUsers from "./pages/admin/Users";
 import AdminUserForm from "./pages/admin/UserForm";
@@ -140,6 +145,10 @@ const App = () => {
               path="/admin/settings"
               element={<ProtectedRoute element={<AdminSettings />} />}
             />
+            <Route
+              path="/admin/profile"
+              element={<ProtectedRoute element={<AdminProfile />} />}
+            />
 
             <Route
               path="/admin/subscriptions"
@@ -160,11 +169,15 @@ const App = () => {
             />
             <Route
               path="/admin/user-subscription/create"
-              element={<ProtectedRoute element={<AdminUserSubscriptionForm />} />}
+              element={
+                <ProtectedRoute element={<AdminUserSubscriptionForm />} />
+              }
             />
             <Route
               path="/admin/user-subscription/edit/:id"
-              element={<ProtectedRoute element={<AdminUserSubscriptionEdit />} />}
+              element={
+                <ProtectedRoute element={<AdminUserSubscriptionEdit />} />
+              }
             />
 
             <Route
@@ -191,6 +204,19 @@ const App = () => {
             <Route
               path="/admin/testimonial/edit/:id"
               element={<ProtectedRoute element={<AdminTestimonialEdit />} />}
+            />
+
+            <Route
+              path="/admin/faqs"
+              element={<ProtectedRoute element={<AdminFaqs />} />}
+            />
+            <Route
+              path="/admin/faq/create"
+              element={<ProtectedRoute element={<AdminFaqForm />} />}
+            />
+            <Route
+              path="/admin/faq/edit/:id"
+              element={<ProtectedRoute element={<AdminFaqEdit />} />}
             />
 
             <Route

@@ -16,6 +16,7 @@ import {
   FaQuoteLeft,
   FaComments,
   FaEnvelope,
+  FaQuestionCircle,
 } from "react-icons/fa";
 import { useState } from "react";
 import { toast } from "react-toastify";
@@ -80,6 +81,11 @@ const Sidebar = () => {
       name: "Testimonials",
       link: "/admin/testimonials",
       icon: <FaQuoteLeft />,
+    },
+    {
+      name: "Faqs",
+      link: "/admin/faqs",
+      icon: <FaQuestionCircle />,
     },
     {
       name: "Transaction History",
