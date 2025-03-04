@@ -1,56 +1,70 @@
-import React, { useState } from "react";
-import Sidebar from "../../components/admin/Sidebar";
+import React, { useState, useEffect } from "react";
+import Sidebar from "../../../components/admin/Sidebar";
 import DataTable from "react-data-table-component";
+import API from "../../../api";
+const BASE_URL = process.env.REACT_APP_BASE_URL;
 
-const TransactionHistory = () => {
-  // Sample transaction data
-  const initialTransactions = [
-    {
-      id: 1,
-      user: {
-        firstName: "John",
-        lastName: "Doe",
-        email: "johndoe@example.com",
-        phone: "+1 234 567 890",
-        profilePic: "/common/man.png",
-      },
-      subscription: {
-        title: "Premium Plan",
-        price: "$50",
-        features: ["Feature 1", "Feature 2", "Feature 3"],
-      },
-      date: "2025-01-01",
-      transactionId: "TXN12345",
-    },
-    {
-      id: 2,
-      user: {
-        firstName: "Jane",
-        lastName: "Smith",
-        email: "janesmith@example.com",
-        phone: "+1 234 567 891",
-        profilePic: "/common/man.png",
-      },
-      subscription: {
-        title: "Basic Plan",
-        price: "$20",
-        features: ["Feature A", "Feature B"],
-      },
-      date: "2025-01-02",
-      transactionId: "TXN12346",
-    },
-  ];
+const AdminSubscriptionPurchase = () => {
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState([]);
+  const [originalData, setOriginalData] = useState([]);
 
-  const [data, setData] = useState(initialTransactions);
+  useEffect(() => {
+    const fetchSubscriptionPurchase = async () => {
+      try {
+        const response = await API.get("/api/admin/subscriptions/purchase");
+
+        // Ensure the response is an array
+        if (!Array.isArray(response.data)) {
+          throw new Error("Invalid response format");
+        }
+
+        const purchasesFromAPI = response.data.map((purchase) => ({
+          id: purchase._id || "",
+          clubName: purchase.userId.club_name || "N/A",
+          clubLogo: BASE_URL+purchase.userId.club_logo || "/common/club.png",
+          user:
+            {
+              first_name: purchase.userId.first_name,
+              last_name: purchase.userId.last_name,
+              email: purchase.userId.email,
+              phone: purchase.userId.phone,
+              profilePic:
+                BASE_URL + purchase.userId.profile || "/common/man.png",
+            } || "N/A",
+          subscription: {
+            title: purchase.subscriptionId.title,
+            price: "$" + purchase.subscriptionId.price,
+            features: purchase.subscriptionId.features,
+          },
+          date:
+            new Date(purchase.createdAt).toLocaleDateString("en-GB") || "N/A",
+          transactionId: purchase.transactionId,
+        }));
+
+        setData(purchasesFromAPI);
+        setOriginalData(purchasesFromAPI);
+      } catch (error) {
+        console.error("Error fetching clubs:", error);
+        setError(error.response?.data?.message || "Failed to fetch clubs");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSubscriptionPurchase();
+  }, []);
+
   const [searchTerm, setSearchTerm] = useState("");
 
   const handleSearch = (e) => {
     const value = e.target.value.toLowerCase();
     setSearchTerm(value);
-    const filtered = initialTransactions.filter(
+    const filtered = originalData.filter(
       (transaction) =>
-        transaction.user.firstName.toLowerCase().includes(value) ||
-        transaction.user.lastName.toLowerCase().includes(value) ||
+        transaction.user.first_name.toLowerCase().includes(value) ||
+        transaction.user.last_name.toLowerCase().includes(value) ||
         transaction.user.email.toLowerCase().includes(value) ||
         transaction.subscription.title.toLowerCase().includes(value)
     );
@@ -59,16 +73,32 @@ const TransactionHistory = () => {
 
   const columns = [
     {
+        name: "Club",
+        selector: (row) => (
+          <img
+            src={row.clubLogo}
+            alt={`${row.clubName}`}
+            className="w-12 h-12 rounded-full"
+          />
+        ),
+        center: true,
+      },
+      {
+        name: "Club Name",
+        selector: (row) => `${row.clubName}`,
+        sortable: true,
+      },
+    {
       name: "User",
       selector: (row) => (
         <div className="flex items-center gap-2">
           <img
             src={row.user.profilePic}
-            alt={`${row.user.firstName} ${row.user.lastName}`}
+            alt={`${row.user.first_name} ${row.user.last_name}`}
             className="w-10 h-10 rounded-full"
           />
           <div>
-            <p className="font-medium">{`${row.user.firstName} ${row.user.lastName}`}</p>
+            <p className="font-medium">{`${row.user.first_name} ${row.user.last_name}`}</p>
             <p className="text-sm text-gray-500">{row.user.email}</p>
           </div>
         </div>
@@ -159,7 +189,7 @@ const TransactionHistory = () => {
         <main className="flex-1 p-6 space-y-6">
           <header className="flex justify-between items-center flex-wrap gap-4">
             <h1 className="text-3xl font-bold text-gray-800">
-              Transaction History
+              Subscription Transaction History
             </h1>
           </header>
           <div className="bg-white p-6 rounded shadow">
@@ -191,16 +221,23 @@ const TransactionHistory = () => {
                 </svg>
               </div>
             </div>
-
-            <DataTable
-              columns={columns}
-              data={data}
-              pagination
-              highlightOnHover
-              striped
-              responsive
-              customStyles={customStyles}
-            />
+            {loading ? (
+              <p>Loading clubs...</p>
+            ) : error ? (
+              <p className="text-red-500">{error}</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <DataTable
+                  columns={columns}
+                  data={data}
+                  pagination
+                  highlightOnHover
+                  striped
+                  responsive
+                  customStyles={customStyles}
+                />
+              </div>
+            )}
           </div>
         </main>
       </div>
@@ -208,4 +245,4 @@ const TransactionHistory = () => {
   );
 };
 
-export default TransactionHistory;
+export default AdminSubscriptionPurchase;

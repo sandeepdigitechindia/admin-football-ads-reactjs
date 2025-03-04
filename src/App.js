@@ -22,10 +22,12 @@ import AdminProfile from "./pages/admin/Profile";
 import AdminSubscriptions from "./pages/admin/subscriptions/Subscriptions";
 import AdminSubscriptionForm from "./pages/admin/subscriptions/SubscriptionForm";
 import AdminSubscriptionEdit from "./pages/admin/subscriptions/AdminSubscriptionEdit";
+import AdminSubscriptionPurchase from "./pages/admin/subscriptions/AdminSubscriptionPurchase";
 
 import AdminUserSubscriptions from "./pages/admin/usersubscriptions/UserSubscriptions";
 import AdminUserSubscriptionForm from "./pages/admin/usersubscriptions/UserSubscriptionForm";
 import AdminUserSubscriptionEdit from "./pages/admin/usersubscriptions/UserSubscriptionEdit";
+import AdminUserSubscriptionPurchase from "./pages/admin/usersubscriptions/UserSubscriptionPurchase";
 
 import AdminServices from "./pages/admin/Services";
 import AdminServiceForm from "./pages/admin/ServiceForm";
@@ -55,7 +57,6 @@ import AdminPostEditForm from "./pages/admin/PostEditForm";
 import AdminPostDetail from "./pages/admin/PostDetail";
 import AdminPostApplicant from "./pages/admin/AdminPostApplicant";
 
-import TransactionHistory from "./pages/admin/TransactionHistory";
 import ContactUs from "./pages/admin/pages/ContactUs";
 
 import Newsletters from "./pages/admin/pages/Newsletters";
@@ -162,6 +163,12 @@ const App = () => {
               path="/admin/subscription/edit/:id"
               element={<ProtectedRoute element={<AdminSubscriptionEdit />} />}
             />
+            <Route
+              path="/admin/subscription-purchase"
+              element={
+                <ProtectedRoute element={<AdminSubscriptionPurchase />} />
+              }
+            />
 
             <Route
               path="/admin/user-subscriptions"
@@ -177,6 +184,13 @@ const App = () => {
               path="/admin/user-subscription/edit/:id"
               element={
                 <ProtectedRoute element={<AdminUserSubscriptionEdit />} />
+              }
+            />
+
+            <Route
+              path="/admin/user-subscription-purchase"
+              element={
+                <ProtectedRoute element={<AdminUserSubscriptionPurchase />} />
               }
             />
 
@@ -276,11 +290,6 @@ const App = () => {
             <Route
               path="/admin/post/applicant/view/:id"
               element={<ProtectedRoute element={<AdminUserView />} />}
-            />
-
-            <Route
-              path="/admin/transaction-history"
-              element={<ProtectedRoute element={<TransactionHistory />} />}
             />
 
             <Route

@@ -5,7 +5,6 @@ import {
   FaTachometerAlt,
   FaClipboardList,
   FaUsers,
-  FaHistory,
   FaDollarSign,
   FaMoneyBill,
   FaCogs,
@@ -28,6 +27,14 @@ const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isUsersOpen, setIsUsersOpen] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [openSubMenus, setOpenSubMenus] = useState({});
+
+  const toggleSubMenu = (menuName) => {
+    setOpenSubMenus((prev) => ({
+      ...prev,
+      [menuName]: !prev[menuName],
+    }));
+  };
 
   // Handle logout action
   const handleLogout = () => {
@@ -63,14 +70,29 @@ const Sidebar = () => {
     },
     { name: "Posts", link: "/admin/posts", icon: <FaClipboardList /> },
     {
-      name: "Subscriptions",
+      name: "Club Subscriptions",
       link: "/admin/subscriptions",
       icon: <FaDollarSign />,
+      subMenu: [
+        { name: "Manage Subscriptions", link: "/admin/subscriptions" },
+        {
+          name: "Subscription Purchase",
+          link: "/admin/subscription-purchase",
+        },
+      ],
     },
+
     {
-      name: "User Subscriptions",
+      name: "Player Subscriptions",
       link: "/admin/user-subscriptions",
       icon: <FaMoneyBill />,
+      subMenu: [
+        { name: "Manage Subscriptions", link: "/admin/user-subscriptions" },
+        {
+          name: "Subscription Purchase",
+          link: "/admin/user-subscription-purchase",
+        },
+      ],
     },
     {
       name: "Services",
@@ -88,11 +110,6 @@ const Sidebar = () => {
       icon: <FaQuestionCircle />,
     },
     {
-      name: "Transaction History",
-      link: "/admin/transaction-history",
-      icon: <FaHistory />,
-    },
-    {
       name: "Contact Us",
       link: "/admin/contact-us",
       icon: <FaComments />,
@@ -103,7 +120,7 @@ const Sidebar = () => {
       icon: <FaEnvelope />,
     },
     { name: "Settings", link: "/admin/settings", icon: <FaCogs /> },
-    { name: "Logout", link: "#", icon: <FaSignOutAlt />, onClick: openModal }, // Added onClick for Logout
+    { name: "Logout", link: "#", icon: <FaSignOutAlt />, onClick: openModal },
   ];
 
   const toggleMenu = () => {
@@ -111,7 +128,7 @@ const Sidebar = () => {
   };
 
   const toggleUsersDropdown = () => {
-    setIsUsersOpen(!isUsersOpen); // Toggle the dropdown for "Users"
+    setIsUsersOpen(!isUsersOpen);
   };
 
   return (
@@ -168,7 +185,7 @@ const Sidebar = () => {
                 {menu.subMenu ? (
                   <div>
                     <button
-                      onClick={toggleUsersDropdown}
+                      onClick={() => toggleSubMenu(menu.name)}
                       className={`flex items-center py-3 px-4 rounded-lg w-full text-left transition duration-300 ${
                         location.pathname.includes(menu.link)
                           ? "bg-blue-700 text-white"
@@ -178,21 +195,21 @@ const Sidebar = () => {
                       <span className="text-lg mr-3">{menu.icon}</span>
                       {menu.name}
                       <span className="ml-auto">
-                        {isUsersOpen ? (
+                        {openSubMenus[menu.name] ? (
                           <FaChevronUp className="text-white" />
                         ) : (
                           <FaChevronDown className="text-white" />
                         )}
                       </span>
                     </button>
-                    {isUsersOpen && (
+                    {openSubMenus[menu.name] && (
                       <ul className="space-y-2 ml-6 mt-2">
                         {menu.subMenu.map((subMenu, subIndex) => (
                           <li key={subIndex}>
                             <Link
                               to={subMenu.link}
                               className="block py-2 px-4 rounded-lg text-gray-300 hover:bg-blue-700 hover:text-white"
-                              onClick={() => setIsOpen(false)} // Close menu on mobile after clicking a link
+                              onClick={() => setIsOpen(false)}
                             >
                               {subMenu.name}
                             </Link>
@@ -201,14 +218,6 @@ const Sidebar = () => {
                       </ul>
                     )}
                   </div>
-                ) : menu.onClick ? (
-                  <button
-                    onClick={menu.onClick}
-                    className="flex items-center py-3 px-4 w-full text-left rounded-lg transition duration-300 text-gray-300 hover:bg-blue-700 hover:text-white"
-                  >
-                    <span className="text-lg mr-3">{menu.icon}</span>
-                    {menu.name}
-                  </button>
                 ) : (
                   <Link
                     to={menu.link}
@@ -217,7 +226,7 @@ const Sidebar = () => {
                         ? "bg-blue-700 text-white"
                         : "text-gray-300 hover:bg-blue-700 hover:text-white"
                     }`}
-                    onClick={() => setIsOpen(false)} // Close menu on mobile after clicking a link
+                    onClick={() => setIsOpen(false)}
                   >
                     <span className="text-lg mr-3">{menu.icon}</span>
                     {menu.name}
