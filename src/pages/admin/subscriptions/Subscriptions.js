@@ -6,6 +6,7 @@ import Swal from "sweetalert2";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import API from "../../../api";
+import Loader from "../../../components/Loader";
 const Subscriptions = () => {
   const navigate = useNavigate();
 
@@ -284,7 +285,9 @@ const Subscriptions = () => {
       },
     },
   };
-
+  if (loading) {
+    return <Loader />;
+  }
   return (
     <div className="bg-gray-100">
       <div className="flex flex-col lg:flex-row">

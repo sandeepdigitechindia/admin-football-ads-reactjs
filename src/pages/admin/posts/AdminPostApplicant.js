@@ -1,74 +1,119 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import DataTable from "react-data-table-component";
-import Sidebar from "../../components/admin/Sidebar";
-
-// Dummy data for applicants (Replace with actual data from API or state)
-const initialApplicants = [
-  {
-    id: 1,
-    firstName: "John",
-    lastName: "Doe",
-    phone: "+1 234 567 890",
-    email: "johndoe@example.com",
-    profilePic: "/common/man.png",
-    cv: "/common/johndoe-cv.pdf",
-    status: "Open", // Can be Open, Close, Archived
-  },
-  {
-    id: 2,
-    firstName: "Jane",
-    lastName: "Smith",
-    phone: "+1 234 567 891",
-    email: "janesmith@example.com",
-    profilePic: "/common/man.png",
-    cv: "/common/janesmith-cv.pdf",
-    status: "Close", // Can be Open, Close, Archived
-  },
-  {
-    id: 3,
-    firstName: "Mark",
-    lastName: "Johnson",
-    phone: "+1 234 567 892",
-    email: "markjohnson@example.com",
-    profilePic: "/common/man.png",
-    cv: "/common/markjohnson-cv.pdf",
-    status: "Archived", // Can be Open, Close, Archived
-  },
-];
+import Sidebar from "../../../components/admin/Sidebar";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import API from "../../../api";
+import Loader from "../../../components/Loader";
+const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 const AdminPostApplicant = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
-  const [applicants, setApplicants] = useState(initialApplicants);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState([]);
+  const [originalData, setOriginalData] = useState([]);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await API.get(
+          `/api/admin/posts/applicants?postId=${id}`
+        );
+
+        // Ensure the response is an array
+        if (!Array.isArray(response.data)) {
+          throw new Error("Invalid response format");
+        }
+
+        const usersFromAPI = response.data.map((user) => ({
+          id: user._id || "",
+          first_name: user.userId.first_name || "N/A",
+          last_name: user.userId.last_name || "N/A",
+          phone: user.userId.phone || "N/A",
+          email: user.userId.email || "N/A",
+          profilePic: BASE_URL + user.userId.profile || "/common/man.png",
+          cv: BASE_URL + user.userId.upload_cv || "#",
+          status: user.status === "true" ? "Seen" : "Unseen",
+          applicantId: user.userId._id || "",
+        }));
+
+        setData(usersFromAPI);
+        setOriginalData(usersFromAPI);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+        setError(error.response?.data?.message || "Failed to fetch users");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, [id]);
+
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Handle status change
-  const handleStatusChange = (applicantId, newStatus) => {
-    setApplicants((prevApplicants) =>
-      prevApplicants.map((applicant) =>
-        applicant.id === applicantId
-          ? { ...applicant, status: newStatus }
-          : applicant
-      )
-    );
+  const handleStatusChange = async (userId, newStatus) => {
+    try {
+      const updatedStatus = newStatus === "true";
+
+      await API.put(
+        `/api/admin/posts/applicants/${userId}`,
+        { status: updatedStatus },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const updatedData = data.map((user) =>
+        user.id === userId
+          ? { ...user, status: newStatus === "true" ? "Seen" : "Unseen" }
+          : user
+      );
+      setData(updatedData);
+      toast.success("Applicant status updated successfully!", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message ||
+          "Failed to update applicant status. Try again.",
+        {
+          position: "top-right",
+          autoClose: 3000,
+        }
+      );
+    }
   };
 
-  // Filtered applicants based on search term
-  const filteredApplicants = applicants.filter(
-    (applicant) =>
-      applicant.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      applicant.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      applicant.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const handleSearch = (e) => {
+    const value = e.target.value.toLowerCase();
+    setSearchTerm(value);
+    if (value === "") {
+      setData(originalData);
+    } else {
+      const filtered = originalData.filter(
+        (user) =>
+          user.first_name.toLowerCase().includes(value) ||
+          user.last_name.toLowerCase().includes(value) ||
+          user.email.toLowerCase().includes(value)
+      );
+      setData(filtered);
+    }
+  };
 
-  // Define columns for the DataTable
   const columns = [
     {
       name: "Profile",
       selector: (row) => (
         <img
           src={row.profilePic}
-          alt={`${row.firstName} ${row.lastName}`}
+          alt={`${row.first_name} ${row.last_name}`}
           className="w-12 h-12 rounded-full"
         />
       ),
@@ -76,7 +121,7 @@ const AdminPostApplicant = () => {
     },
     {
       name: "Name",
-      selector: (row) => `${row.firstName} ${row.lastName}`,
+      selector: (row) => `${row.first_name} ${row.last_name}`,
       sortable: true,
     },
     {
@@ -107,11 +152,9 @@ const AdminPostApplicant = () => {
       selector: (row) => (
         <span
           className={`px-3 py-1 rounded-full text-sm font-medium ${
-            row.status === "Open"
+            row.status === "Seen"
               ? "bg-green-100 text-green-700"
-              : row.status === "Close"
-              ? "bg-yellow-100 text-yellow-700"
-              : "bg-red-100 text-red-700"
+              : "bg-gray-100 text-gray-700"
           }`}
         >
           {row.status}
@@ -122,13 +165,13 @@ const AdminPostApplicant = () => {
       name: "Change Status",
       cell: (row) => (
         <select
-          value={row.status}
+          value={String(row.status)}
           onChange={(e) => handleStatusChange(row.id, e.target.value)}
           className="px-3 py-1 border rounded-md"
         >
-          <option value="Open">Open</option>
-          <option value="Close">Close</option>
-          <option value="Archived">Archived</option>
+          <option value="">Change</option>
+          <option value="true">Seen</option>
+          <option value="false">Unseen</option>
         </select>
       ),
     },
@@ -138,14 +181,16 @@ const AdminPostApplicant = () => {
         <div className="text-center">
           <button
             className="py-2 px-4 bg-blue-500 text-white rounded hover:bg-blue-600 transition shadow"
-            onClick={() => navigate(`/admin/post/applicant/view/${row.id}`)}
+            onClick={() =>
+              navigate(`/admin/post/applicant/view/${row.applicantId}`)
+            }
           >
             View
           </button>
         </div>
       ),
       center: true,
-    }
+    },
   ];
 
   const customStyles = {
@@ -198,6 +243,9 @@ const AdminPostApplicant = () => {
       },
     },
   };
+  if (loading) {
+    return <Loader />;
+  }
 
   return (
     <div className="flex bg-gray-100">
@@ -221,7 +269,7 @@ const AdminPostApplicant = () => {
                 type="text"
                 placeholder="Search by title..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={handleSearch}
                 className="w-full p-3 pl-10 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <svg
@@ -242,13 +290,23 @@ const AdminPostApplicant = () => {
           </div>
 
           {/* Data Table */}
-          <DataTable
-            columns={columns}
-            data={filteredApplicants}
-            pagination
-            customStyles={customStyles}
-            highlightOnHover
-          />
+          {loading ? (
+            <p>Loading users...</p>
+          ) : error ? (
+            <p className="text-red-500">{error}</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <DataTable
+                columns={columns}
+                data={data}
+                pagination
+                highlightOnHover
+                striped
+                responsive
+                customStyles={customStyles}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>

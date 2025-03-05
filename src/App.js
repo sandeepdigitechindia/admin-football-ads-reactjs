@@ -29,9 +29,9 @@ import AdminUserSubscriptionForm from "./pages/admin/usersubscriptions/UserSubsc
 import AdminUserSubscriptionEdit from "./pages/admin/usersubscriptions/UserSubscriptionEdit";
 import AdminUserSubscriptionPurchase from "./pages/admin/usersubscriptions/UserSubscriptionPurchase";
 
-import AdminServices from "./pages/admin/Services";
-import AdminServiceForm from "./pages/admin/ServiceForm";
-import AdminServiceEdit from "./pages/admin/AdminServiceEdit";
+import AdminServices from "./pages/admin/services/Services";
+import AdminServiceForm from "./pages/admin/services/ServiceForm";
+import AdminServiceEdit from "./pages/admin/services/AdminServiceEdit";
 
 import AdminTestimonials from "./pages/admin/testimonials/Testimonials";
 import AdminTestimonialForm from "./pages/admin/testimonials/TestimonialForm";
@@ -41,21 +41,21 @@ import AdminFaqs from "./pages/admin/faqs/Faqs";
 import AdminFaqForm from "./pages/admin/faqs/FaqForm";
 import AdminFaqEdit from "./pages/admin/faqs/AdminFaqEdit";
 
-import AdminUsers from "./pages/admin/Users";
-import AdminUserForm from "./pages/admin/UserForm";
-import AdminUserView from "./pages/admin/AdminUserView";
-import AdminUserEdit from "./pages/admin/AdminUserEdit";
+import AdminUsers from "./pages/admin/users/Users";
+import AdminUserForm from "./pages/admin/users/UserForm";
+import AdminUserView from "./pages/admin/users/AdminUserView";
+import AdminUserEdit from "./pages/admin/users/AdminUserEdit";
 
-import AdminClubs from "./pages/admin/Clubs";
-import AdminClubForm from "./pages/admin/ClubForm";
-import AdminClubView from "./pages/admin/AdminClubView";
-import AdminClubEdit from "./pages/admin/AdminClubEdit";
+import AdminClubs from "./pages/admin/clubs/Clubs";
+import AdminClubForm from "./pages/admin/clubs/ClubForm";
+import AdminClubView from "./pages/admin/clubs/AdminClubView";
+import AdminClubEdit from "./pages/admin/clubs/AdminClubEdit";
 
-import AdminPosts from "./pages/admin/Posts";
-import AdminPostForm from "./pages/admin/PostForm";
-import AdminPostEditForm from "./pages/admin/PostEditForm";
-import AdminPostDetail from "./pages/admin/PostDetail";
-import AdminPostApplicant from "./pages/admin/AdminPostApplicant";
+import AdminPosts from "./pages/admin/posts/Posts";
+import AdminPostForm from "./pages/admin/posts/PostForm";
+import AdminPostEditForm from "./pages/admin/posts/PostEditForm";
+import AdminPostDetail from "./pages/admin/posts/PostDetail";
+import AdminPostApplicant from "./pages/admin/posts/AdminPostApplicant";
 
 import ContactUs from "./pages/admin/pages/ContactUs";
 

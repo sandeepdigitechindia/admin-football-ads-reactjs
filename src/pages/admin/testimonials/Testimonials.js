@@ -6,6 +6,7 @@ import Swal from "sweetalert2";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import API from "../../../api";
+import Loader from "../../../components/Loader";
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 const Testimonials = () => {
   const navigate = useNavigate();
@@ -291,7 +292,9 @@ const Testimonials = () => {
       },
     },
   };
-
+  if (loading) {
+    return <Loader />;
+  }
   return (
     <div className="bg-gray-100">
       {/* Wrapper for Sidebar and Main Content */}

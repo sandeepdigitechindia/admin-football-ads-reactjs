@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import Sidebar from "../../components/admin/Sidebar";
+import Sidebar from "../../../components/admin/Sidebar";
 import { Link, useNavigate } from "react-router-dom";
-import API from "../../api";
+import API from "../../../api";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 const BASE_URL = process.env.REACT_APP_BASE_URL;

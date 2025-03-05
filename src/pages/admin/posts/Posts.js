@@ -1,57 +1,108 @@
 import React, { useState, useEffect } from "react";
-import Sidebar from "../../components/admin/Sidebar";
-import DataTable from "react-data-table-component";
+import Sidebar from "../../../components/admin/Sidebar";
 import { Link, useNavigate } from "react-router-dom";
+import DataTable from "react-data-table-component";
 import Swal from "sweetalert2";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import API from "../../api";
-const Users = () => {
+import API from "../../../api";
+import Loader from "../../../components/Loader";
+const BASE_URL = process.env.REACT_APP_BASE_URL;
+const Posts = () => {
   const navigate = useNavigate();
-
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState([]);
   const [originalData, setOriginalData] = useState([]);
 
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchPosts = async () => {
       try {
-        const response = await API.get("/api/admin/users?role=player");
+        const response = await API.get("/api/admin/posts?recent=true");
 
         // Ensure the response is an array
         if (!Array.isArray(response.data)) {
           throw new Error("Invalid response format");
         }
 
-        const usersFromAPI = response.data.map((user) => ({
-          id: user._id || "",
-          firstName: user.first_name || "N/A",
-          lastName: user.last_name || "N/A",
-          phone: user.phone || "N/A",
-          email: user.email || "N/A",
-          profilePic: user.profile || "/common/man.png",
-          cv: user.upload_cv || "#",
-          status: user.isActive ? "Active" : "Deactivate",
+        const postsFromAPI = response.data.map((post) => ({
+          id: post._id || "",
+          image: BASE_URL + post.userId.club_logo || "/common/club.png",
+          name: post.userId.club_name || "N/A",
+          title: post.title || "N/A",
+          applicantsCount: post.applicantCount,
+          date: new Date(post.createdAt).toLocaleDateString("en-GB") || "N/A",
+          status: post.status === "true" ? "Open" : "Close",
         }));
 
-        setData(usersFromAPI);
-        setOriginalData(usersFromAPI);
+        setData(postsFromAPI);
+        setOriginalData(postsFromAPI);
       } catch (error) {
-        console.error("Error fetching users:", error);
-        setError(error.response?.data?.message || "Failed to fetch users");
+        console.error("Error fetching posts:", error);
+        setError(error.response?.data?.message || "Failed to fetch posts");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchUsers();
+    fetchPosts();
   }, []);
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Handle Delete User (e.g., delete from API or state)
-  const handleDeleteUser = async (userId) => {
+  const handleStatusChange = async (postId, newStatus) => {
+    try {
+      const updatedStatus = newStatus === "true";
+
+      await API.put(
+        `/api/admin/posts/${postId}`,
+        { status: updatedStatus },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const updatedData = data.map((user) =>
+        user.id === postId
+          ? { ...user, status: newStatus === "true" ? "Open" : "Close" }
+          : user
+      );
+      setData(updatedData);
+      toast.success("Post status updated successfully!", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message ||
+          "Failed to update post status. Try again.",
+        {
+          position: "top-right",
+          autoClose: 3000,
+        }
+      );
+    }
+  };
+
+  const handleSearch = (e) => {
+    const value = e.target.value.toLowerCase();
+    setSearchTerm(value);
+    if (value === "") {
+      setData(originalData);
+    } else {
+      const filtered = originalData.filter(
+        (post) =>
+          post.club_name.toLowerCase().includes(value) ||
+          post.title.toLowerCase().includes(value)
+      );
+      setData(filtered);
+    }
+  };
+
+  // Handle Delete Post (e.g., delete from API or state)
+  const handleDeletePost = async (postId) => {
     Swal.fire({
       title: "Are you sure?",
       text: "You won't be able to revert this!",
@@ -63,124 +114,94 @@ const Users = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await API.delete(`/api/admin/users/permanent/${userId}`);
-          setData((prevUsers) =>
-            prevUsers.filter((user) => user.id !== userId)
+          await API.delete(`/api/admin/posts/permanent/${postId}`);
+          setData((prevPosts) =>
+            prevPosts.filter((post) => post.id !== postId)
           );
-
-          Swal.fire("Deleted!", "User has been deleted.", "success");
+          Swal.fire("Deleted!", "Post has been deleted.", "success");
         } catch (error) {
-          console.error("Error deleting user:", error);
-          Swal.fire("Error!", "Failed to delete user. Try again.", "error");
+          Swal.fire("Error!", "Failed to delete post. Try again.", "error");
         }
       }
     });
   };
 
-  const handleSearch = (e) => {
-    const value = e.target.value.toLowerCase();
-    setSearchTerm(value);
-    if (value === "") {
-      setData(originalData);
-    } else {
-      const filtered = originalData.filter(
-        (user) =>
-          user.firstName.toLowerCase().includes(value) ||
-          user.lastName.toLowerCase().includes(value) ||
-          user.email.toLowerCase().includes(value)
-      );
-      setData(filtered);
-    }
-  };
-
-  const handleStatusChange = async (userId, newStatus) => {
-    try {
-      const updatedStatus = newStatus === "true";
-
-      const formData = new FormData();
-      formData.append("status", updatedStatus);
-
-      await API.put(`/api/admin/users/${userId}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      const updatedData = data.map((user) =>
-        user.id === userId
-          ? { ...user, status: newStatus === "true" ? "Active" : "Deactivate" }
-          : user
-      );
-      setData(updatedData);
-      toast.success("User status updated successfully!", {
-        position: "top-right",
-        autoClose: 3000,
-      });
-    } catch (error) {
-      toast.error(
-        error.response?.data?.message ||
-          "Failed to update user status. Try again.",
-        {
-          position: "top-right",
-          autoClose: 3000,
-        }
-      );
-    }
-  };
-
   const columns = [
     {
-      name: "Profile",
+      name: "Club",
       selector: (row) => (
         <img
-          src={row.profilePic}
-          alt={`${row.firstName} ${row.lastName}`}
-          className="w-12 h-12 rounded-full"
+          src={row.image}
+          alt="club"
+          className="w-10 h-10 rounded-full border border-gray-300"
         />
+      ),
+      sortable: true,
+      center: true,
+    },
+    {
+      name: "Club Name",
+      selector: (row) => row.name,
+      sortable: true,
+      cell: (row) => (
+        <div className="font-semibold text-gray-700 text-center">
+          {row.name}
+        </div>
       ),
       center: true,
     },
     {
-      name: "Name",
-      selector: (row) => `${row.firstName} ${row.lastName}`,
+      name: "Job Title",
+      selector: (row) => row.title,
       sortable: true,
+      center: true,
     },
+
     {
-      name: "Phone",
-      selector: (row) => row.phone,
+      name: "Date",
+      selector: (row) => row.date,
       sortable: true,
-    },
-    {
-      name: "Email",
-      selector: (row) => row.email,
-      sortable: true,
-    },
-    {
-      name: "CV",
-      selector: (row) => (
-        <a
-          href={row.cv}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-500 hover:underline"
-        >
-          View CV
-        </a>
+      cell: (row) => (
+        <div className="text-gray-500 text-center">{row.date}</div>
       ),
+      center: true,
+    },
+
+    
+    {
+      name: "Applicants with Counts",
+      selector: (row) => row.applicantsCount,
+      sortable: true,
+      cell: (row) => (
+        <div className="text-sm text-gray-600 text-center">
+          <div
+            className="inline-flex items-center justify-center w-8 h-8 bg-blue-500 text-white rounded-full cursor-pointer"
+            onClick={() => navigate(`/admin/post/applicants/${row.id}`)}
+          >
+            {row.applicantsCount}
+          </div>{" "}
+          Applicants
+        </div>
+      ),
+      center: true,
     },
     {
       name: "Status",
       selector: (row) => (
         <span
           className={`px-3 py-1 rounded-full text-sm font-medium ${
-            row.status === "Active"
+            row.status === "Open"
               ? "bg-green-100 text-green-700"
-              : "bg-gray-100 text-gray-700"
-          }`}
+              : row.status === "Close"
+              ? "bg-yellow-100 text-yellow-700"
+              : "bg-red-100 text-red-700"
+          } text-center`}
         >
           {row.status}
         </span>
       ),
+      sortable: true,
+      center: true,
     },
     {
       name: "Change Status",
@@ -191,12 +212,11 @@ const Users = () => {
           className="px-3 py-1 border rounded-md"
         >
           <option value="">Change</option>
-          <option value="true">Active</option>
-          <option value="false">Deactivate</option>
+          <option value="true">Open</option>
+          <option value="false">Close</option>
         </select>
       ),
     },
-
     {
       name: "Action",
       cell: (row) => (
@@ -206,11 +226,11 @@ const Users = () => {
             onChange={(e) => {
               const action = e.target.value;
               if (action === "view") {
-                navigate(`/admin/user/view/${row.id}`);
+                navigate(`/admin/post/view/${row.id}`);
               } else if (action === "edit") {
-                navigate(`/admin/user/edit/${row.id}`);
+                navigate(`/admin/post/edit/${row.id}`);
               } else if (action === "delete") {
-                handleDeleteUser(row.id);
+                handleDeletePost(row.id);
               }
               e.target.value = "";
             }}
@@ -279,16 +299,23 @@ const Users = () => {
     },
   };
 
+  if (loading) {
+    return <Loader />;
+  }
   return (
     <div className="bg-gray-100">
+      {/* Wrapper for Sidebar and Main Content */}
       <div className="flex flex-col lg:flex-row">
         <Sidebar />
+
+        {/* Main Content */}
         <div className="overflow-x-auto w-full">
           <main className="flex-1 p-6 space-y-6">
+            {/* Posts Header */}
             <header className="flex justify-between items-center flex-wrap gap-4">
-              <h1 className="text-3xl font-bold text-gray-800">All Users</h1>
+              <h1 className="text-3xl font-bold text-gray-800">All Posts</h1>
               <Link
-                to={"/admin/user/create"}
+                to={"/admin/post/create"}
                 className="py-2 px-6 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
               >
                 Add New &#43;
@@ -296,14 +323,13 @@ const Users = () => {
             </header>
 
             <div className="bg-white p-6 rounded shadow">
+              {/* Header with Search Input */}
               <div className="flex flex-col sm:flex-row justify-between items-center mb-4">
-                <h2 className="text-xl font-medium text-gray-800">
-                  Users List
-                </h2>
+                <h2 className="text-xl font-medium text-gray-800">All Posts</h2>
                 <div className="relative mt-2 sm:mt-0 w-full sm:w-auto">
                   <input
                     type="text"
-                    placeholder="Search by name or email..."
+                    placeholder="Search by title..."
                     value={searchTerm}
                     onChange={handleSearch}
                     className="w-full p-3 pl-10 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -324,8 +350,9 @@ const Users = () => {
                   </svg>
                 </div>
               </div>
+
               {loading ? (
-                <p>Loading users...</p>
+                <p>Loading clubs...</p>
               ) : error ? (
                 <p className="text-red-500">{error}</p>
               ) : (
@@ -349,4 +376,4 @@ const Users = () => {
   );
 };
 
-export default Users;
+export default Posts;

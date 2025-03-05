@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import Sidebar from "../../components/admin/Sidebar";
+import Sidebar from "../../../components/admin/Sidebar";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import API from "../../api";
+import API from "../../../api";
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 const PostForm = () => {

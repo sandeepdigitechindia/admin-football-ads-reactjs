@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import Sidebar from "../../components/admin/Sidebar";
-import API from "../../api";
+import Sidebar from "../../../components/admin/Sidebar";
+import API from "../../../api";
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 const PostDetail = () => {

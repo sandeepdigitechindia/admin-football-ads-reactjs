@@ -1,12 +1,13 @@
-import React, { useState } from "react";
-import Sidebar from "../../components/admin/Sidebar";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState,useEffect } from "react";
+import Sidebar from "../../../components/admin/Sidebar";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import API from "../../api";
-const BASE_URL = process.env.REACT_APP_BASE_URL;
+import API from "../../../api";
+const BASE_URL = process.env.REACT_APP_BASE_URL;;
 
 const ServiceForm = () => {
+  const { id } = useParams();
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -14,8 +15,22 @@ const ServiceForm = () => {
   });
 
   const [errors, setErrors] = useState({});
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
+
+      // Fetch user data from API
+  useEffect(() => {
+    const fetchService = async () => {
+      try {
+        const response = await API.get(`/api/admin/services/${id}`);
+        setFormData(response.data);
+      } catch (error) {
+        console.error("Error fetching service data:", error);
+      }
+    };
+
+    if (id) fetchService();
+  }, [id]);
 
   const validate = () => {
     const newErrors = {};
@@ -42,31 +57,27 @@ const ServiceForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!validate()) return;
 
     setLoading(true);
 
     try {
-      await API.post(`${BASE_URL}/api/admin/services`, {
+      const updatedData = {
         title: formData.title,
         description: formData.description,
-        video_link: formData.video_link,
-      });
+        video_link: formData.video_link
+      };
+
+      await API.put(`${BASE_URL}/api/admin/services/${id}`, updatedData);
       navigate("/admin/services");
-      toast.success("Service Created Successfully!", {
+      toast.success("Service Updated Successfully!", {
         position: "top-right",
         autoClose: 3000,
-      });
-      setFormData({
-        title: "",
-        description: "",
-        video_link: "",
       });
       setErrors({});
     } catch (error) {
       toast.error(
-        error.response?.data?.message || "Service Create failed. Try again.",
+        error.response?.data?.message || "Service Update failed. Try again.",
         {
           position: "top-right",
           autoClose: 3000,
@@ -96,7 +107,7 @@ const ServiceForm = () => {
           </header>
           <div className="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow">
             <h1 className="text-2xl font-bold text-gray-800 mb-6">
-              Create Service
+              Edit Service
             </h1>
 
             <form onSubmit={handleSubmit} className="">
@@ -170,7 +181,7 @@ const ServiceForm = () => {
                 className="w-full py-2 px-4 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
                 disabled={loading}
               >
-                {loading ? "Submit..." : "Submit"}
+                {loading ? "Register..." : "Register"}
               </button>
             </form>
           </div>

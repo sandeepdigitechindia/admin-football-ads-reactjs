@@ -1,59 +1,55 @@
 import React, { useState, useEffect } from "react";
-import Sidebar from "../../components/admin/Sidebar";
+import Sidebar from "../../../components/admin/Sidebar";
 import DataTable from "react-data-table-component";
 import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import API from "../../api";
-const BASE_URL = process.env.REACT_APP_BASE_URL;
-
-const Clubs = () => {
+import API from "../../../api";
+import Loader from "../../../components/Loader";
+const Services = () => {
   const navigate = useNavigate();
+
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState([]);
   const [originalData, setOriginalData] = useState([]);
 
   useEffect(() => {
-    const fetchClubs = async () => {
+    const fetchServices = async () => {
       try {
-        const response = await API.get("/api/admin/users?role=club");
+        const response = await API.get("/api/admin/services");
 
         // Ensure the response is an array
         if (!Array.isArray(response.data)) {
           throw new Error("Invalid response format");
         }
 
-        const clubsFromAPI = response.data.map((club) => ({
-          id: club._id || "",
-          clubName: club.club_name || "N/A",
-          clubLogo: BASE_URL+club.club_logo || "/common/club.png",
-          firstName: club.first_name || "N/A",
-          lastName: club.last_name || "N/A",
-          phone: club.phone || "N/A",
-          email: club.email || "N/A",
-          profilePic: club.profile || "/common/man.png",
-          status: club.isActive ? "Active" : "Deactivate",
+        const servicesFromAPI = response.data.map((service) => ({
+          id: service._id || "",
+          title: service.title || "N/A",
+          description: service.description || "N/A",
+          video_link: service.video_link || "N/A",
+          status: service.status === "true" ? "Active" : "Deactivate",
         }));
 
-        setData(clubsFromAPI);
-        setOriginalData(clubsFromAPI);
+        setData(servicesFromAPI);
+        setOriginalData(servicesFromAPI);
       } catch (error) {
-        console.error("Error fetching clubs:", error);
-        setError(error.response?.data?.message || "Failed to fetch clubs");
+        console.error("Error fetching services:", error);
+        setError(error.response?.data?.message || "Failed to fetch services");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchClubs();
+    fetchServices();
   }, []);
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Handle Delete Club (e.g., delete from API or state)
-  const handleDeleteClub = async (clubId) => {
+  // Handle Delete Service (e.g., delete from API or state)
+  const handleDeleteService = async (serviceId) => {
     Swal.fire({
       title: "Are you sure?",
       text: "You won't be able to revert this!",
@@ -65,14 +61,15 @@ const Clubs = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await API.delete(`/api/admin/users/permanent/${clubId}`);
-          setData((prevClubs) =>
-            prevClubs.filter((club) => club.id !== clubId)
+          await API.delete(`/api/admin/services/permanent/${serviceId}`);
+          setData((prevServices) =>
+            prevServices.filter((service) => service.id !== serviceId)
           );
-          Swal.fire("Deleted!", "Club has been deleted.", "success");
+
+          Swal.fire("Deleted!", "Service has been deleted.", "success");
         } catch (error) {
-          console.error("Error deleting club:", error);
-          Swal.fire("Error!", "Failed to delete club. Try again.", "error");
+          console.error("Error deleting service:", error);
+          Swal.fire("Error!", "Failed to delete service. Try again.", "error");
         }
       }
     });
@@ -85,42 +82,45 @@ const Clubs = () => {
       setData(originalData);
     } else {
       const filtered = originalData.filter(
-        (club) =>
-          club.firstName.toLowerCase().includes(value) ||
-          club.lastName.toLowerCase().includes(value) ||
-          club.email.toLowerCase().includes(value)
+        (service) =>
+          service.title.toLowerCase().includes(value) ||
+          service.description.toLowerCase().includes(value) ||
+          service.video_link.toLowerCase().includes(value)
       );
       setData(filtered);
     }
   };
 
-  const handleStatusChange = async (clubId, newStatus) => {
+  const handleStatusChange = async (serviceId, newStatus) => {
     try {
       const updatedStatus = newStatus === "true";
 
       const formData = new FormData();
       formData.append("status", updatedStatus);
 
-      await API.put(`/api/admin/users/${clubId}`, formData, {
+      await API.put(`/api/admin/services/${serviceId}`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
 
-      const updatedData = data.map((club) =>
-        club.id === clubId
-          ? { ...club, status: newStatus === "true" ? "Active" : "Deactivate" }
-          : club
+      const updatedData = data.map((service) =>
+        service.id === serviceId
+          ? {
+              ...service,
+              status: newStatus === "true" ? "Active" : "Deactivate",
+            }
+          : service
       );
       setData(updatedData);
-      toast.success("Club status updated successfully!", {
+      toast.success("Service status updated successfully!", {
         position: "top-right",
         autoClose: 3000,
       });
     } catch (error) {
       toast.error(
         error.response?.data?.message ||
-          "Failed to update club status. Try again.",
+          "Failed to update service status. Try again.",
         {
           position: "top-right",
           autoClose: 3000,
@@ -131,45 +131,18 @@ const Clubs = () => {
 
   const columns = [
     {
-      name: "Club",
-      selector: (row) => (
-        <img
-          src={row.clubLogo}
-          alt={`${row.clubName}`}
-          className="w-12 h-12 rounded-full"
-        />
-      ),
-      center: true,
-    },
-    {
-      name: "Club Name",
-      selector: (row) => `${row.clubName}`,
+      name: "Title",
+      selector: (row) => row.title,
       sortable: true,
     },
     {
-      name: "Profile",
-      selector: (row) => (
-        <img
-          src={row.profilePic}
-          alt={`${row.firstName} ${row.lastName}`}
-          className="w-12 h-12 rounded-full"
-        />
-      ),
-      center: true,
-    },
-    {
-      name: "Name",
-      selector: (row) => `${row.firstName} ${row.lastName}`,
+      name: "Description",
+      selector: (row) => row.description,
       sortable: true,
     },
     {
-      name: "Phone",
-      selector: (row) => row.phone,
-      sortable: true,
-    },
-    {
-      name: "Email",
-      selector: (row) => row.email,
+      name: "Video Link",
+      selector: (row) => row.video_link,
       sortable: true,
     },
 
@@ -193,7 +166,7 @@ const Clubs = () => {
         <select
           value={String(row.status)}
           onChange={(e) => handleStatusChange(row.id, e.target.value)}
-          className="px-2 py-1 border rounded-md"
+          className="px-3 py-1 border rounded-md"
         >
           <option value="">Change</option>
           <option value="true">Active</option>
@@ -201,6 +174,7 @@ const Clubs = () => {
         </select>
       ),
     },
+
     {
       name: "Action",
       cell: (row) => (
@@ -209,26 +183,22 @@ const Clubs = () => {
             className="p-2 mx-4 border rounded shadow-sm outline-none"
             onChange={(e) => {
               const action = e.target.value;
-              if (action === "view") {
-                navigate(`/admin/club/view/${row.id}`);
-              } else if (action === "edit") {
-                navigate(`/admin/club/edit/${row.id}`);
+              if (action === "edit") {
+                navigate(`/admin/service/edit/${row.id}`);
               } else if (action === "delete") {
-                handleDeleteClub(row.id);
+                handleDeleteService(row.id);
               }
               e.target.value = "";
             }}
           >
             <option value="">Action</option>
-            <option value="view">👁️ View</option>
             <option value="edit">✏️ Edit </option>
             <option value="delete">🗑️ Delete</option>
           </select>
         </div>
       ),
       center: true,
-    }
-    
+    },
   ];
 
   const customStyles = {
@@ -281,7 +251,9 @@ const Clubs = () => {
       },
     },
   };
-
+  if (loading) {
+    return <Loader />;
+  }
   return (
     <div className="bg-gray-100">
       <div className="flex flex-col lg:flex-row">
@@ -289,9 +261,9 @@ const Clubs = () => {
         <div className="overflow-x-auto w-full">
           <main className="flex-1 p-6 space-y-6">
             <header className="flex justify-between items-center flex-wrap gap-4">
-              <h1 className="text-3xl font-bold text-gray-800">All Clubs</h1>
+              <h1 className="text-3xl font-bold text-gray-800">Services</h1>
               <Link
-                to={"/admin/club/create"}
+                to={"/admin/service/create"}
                 className="py-2 px-6 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
               >
                 Add New &#43;
@@ -301,12 +273,12 @@ const Clubs = () => {
             <div className="bg-white p-6 rounded shadow">
               <div className="flex flex-col sm:flex-row justify-between items-center mb-4">
                 <h2 className="text-xl font-medium text-gray-800">
-                  Clubs List
+                  Services List
                 </h2>
                 <div className="relative mt-2 sm:mt-0 w-full sm:w-auto">
                   <input
                     type="text"
-                    placeholder="Search by name or email..."
+                    placeholder="Search by title or description..."
                     value={searchTerm}
                     onChange={handleSearch}
                     className="w-full p-3 pl-10 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -327,8 +299,9 @@ const Clubs = () => {
                   </svg>
                 </div>
               </div>
+
               {loading ? (
-                <p>Loading clubs...</p>
+                <p>Loading services...</p>
               ) : error ? (
                 <p className="text-red-500">{error}</p>
               ) : (
@@ -352,4 +325,4 @@ const Clubs = () => {
   );
 };
 
-export default Clubs;
+export default Services;

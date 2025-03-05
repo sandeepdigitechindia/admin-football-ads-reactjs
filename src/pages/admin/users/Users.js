@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
-import Sidebar from "../../components/admin/Sidebar";
+import Sidebar from "../../../components/admin/Sidebar";
 import DataTable from "react-data-table-component";
 import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import API from "../../api";
-
-const Services = () => {
+import API from "../../../api";
+import Loader from "../../../components/Loader";
+const BASE_URL = process.env.REACT_APP_BASE_URL;
+const Users = () => {
   const navigate = useNavigate();
 
   const [error, setError] = useState(null);
@@ -16,40 +17,43 @@ const Services = () => {
   const [originalData, setOriginalData] = useState([]);
 
   useEffect(() => {
-    const fetchServices = async () => {
+    const fetchUsers = async () => {
       try {
-        const response = await API.get("/api/admin/services");
+        const response = await API.get("/api/admin/users?role=player");
 
         // Ensure the response is an array
         if (!Array.isArray(response.data)) {
           throw new Error("Invalid response format");
         }
 
-        const servicesFromAPI = response.data.map((service) => ({
-          id: service._id || "",
-          title: service.title || "N/A",
-          description: service.description || "N/A",
-          video_link: service.video_link || "N/A",
-          status: service.status === "true" ? "Active" : "Deactivate",
+        const usersFromAPI = response.data.map((user) => ({
+          id: user._id || "",
+          firstName: user.first_name || "N/A",
+          lastName: user.last_name || "N/A",
+          phone: user.phone || "N/A",
+          email: user.email || "N/A",
+          profilePic: BASE_URL + user.profile || "/common/man.png",
+          cv: BASE_URL + user.upload_cv || "#",
+          status: user.isActive ? "Active" : "Deactivate",
         }));
 
-        setData(servicesFromAPI);
-        setOriginalData(servicesFromAPI);
+        setData(usersFromAPI);
+        setOriginalData(usersFromAPI);
       } catch (error) {
-        console.error("Error fetching services:", error);
-        setError(error.response?.data?.message || "Failed to fetch services");
+        console.error("Error fetching users:", error);
+        setError(error.response?.data?.message || "Failed to fetch users");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchServices();
+    fetchUsers();
   }, []);
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Handle Delete Service (e.g., delete from API or state)
-  const handleDeleteService = async (serviceId) => {
+  // Handle Delete User (e.g., delete from API or state)
+  const handleDeleteUser = async (userId) => {
     Swal.fire({
       title: "Are you sure?",
       text: "You won't be able to revert this!",
@@ -61,15 +65,15 @@ const Services = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await API.delete(`/api/admin/services/permanent/${serviceId}`);
-          setData((prevServices) =>
-            prevServices.filter((service) => service.id !== serviceId)
+          await API.delete(`/api/admin/users/permanent/${userId}`);
+          setData((prevUsers) =>
+            prevUsers.filter((user) => user.id !== userId)
           );
 
-          Swal.fire("Deleted!", "Service has been deleted.", "success");
+          Swal.fire("Deleted!", "User has been deleted.", "success");
         } catch (error) {
-          console.error("Error deleting service:", error);
-          Swal.fire("Error!", "Failed to delete service. Try again.", "error");
+          console.error("Error deleting user:", error);
+          Swal.fire("Error!", "Failed to delete user. Try again.", "error");
         }
       }
     });
@@ -82,45 +86,42 @@ const Services = () => {
       setData(originalData);
     } else {
       const filtered = originalData.filter(
-        (service) =>
-          service.title.toLowerCase().includes(value) ||
-          service.description.toLowerCase().includes(value) ||
-          service.video_link.toLowerCase().includes(value)
+        (user) =>
+          user.firstName.toLowerCase().includes(value) ||
+          user.lastName.toLowerCase().includes(value) ||
+          user.email.toLowerCase().includes(value)
       );
       setData(filtered);
     }
   };
 
-  const handleStatusChange = async (serviceId, newStatus) => {
+  const handleStatusChange = async (userId, newStatus) => {
     try {
       const updatedStatus = newStatus === "true";
 
       const formData = new FormData();
       formData.append("status", updatedStatus);
 
-      await API.put(`/api/admin/services/${serviceId}`, formData, {
+      await API.put(`/api/admin/users/${userId}`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
 
-      const updatedData = data.map((service) =>
-        service.id === serviceId
-          ? {
-              ...service,
-              status: newStatus === "true" ? "Active" : "Deactivate",
-            }
-          : service
+      const updatedData = data.map((user) =>
+        user.id === userId
+          ? { ...user, status: newStatus === "true" ? "Active" : "Deactivate" }
+          : user
       );
       setData(updatedData);
-      toast.success("Service status updated successfully!", {
+      toast.success("User status updated successfully!", {
         position: "top-right",
         autoClose: 3000,
       });
     } catch (error) {
       toast.error(
         error.response?.data?.message ||
-          "Failed to update service status. Try again.",
+          "Failed to update user status. Try again.",
         {
           position: "top-right",
           autoClose: 3000,
@@ -131,21 +132,44 @@ const Services = () => {
 
   const columns = [
     {
-      name: "Title",
-      selector: (row) => row.title,
+      name: "Profile",
+      selector: (row) => (
+        <img
+          src={row.profilePic}
+          alt={`${row.firstName} ${row.lastName}`}
+          className="w-12 h-12 rounded-full"
+        />
+      ),
+      center: true,
+    },
+    {
+      name: "Name",
+      selector: (row) => `${row.firstName} ${row.lastName}`,
       sortable: true,
     },
     {
-      name: "Description",
-      selector: (row) => row.description,
+      name: "Phone",
+      selector: (row) => row.phone,
       sortable: true,
     },
     {
-      name: "Video Link",
-      selector: (row) => row.video_link,
+      name: "Email",
+      selector: (row) => row.email,
       sortable: true,
     },
-
+    {
+      name: "CV",
+      selector: (row) => (
+        <a
+          href={row.cv}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-500 hover:underline"
+        >
+          View CV
+        </a>
+      ),
+    },
     {
       name: "Status",
       selector: (row) => (
@@ -183,16 +207,21 @@ const Services = () => {
             className="p-2 mx-4 border rounded shadow-sm outline-none"
             onChange={(e) => {
               const action = e.target.value;
-              if (action === "edit") {
-                navigate(`/admin/service/edit/${row.id}`);
+              if (action === "view") {
+                navigate(`/admin/user/view/${row.id}`);
+              } else if (action === "edit") {
+                navigate(`/admin/user/edit/${row.id}`);
               } else if (action === "delete") {
-                handleDeleteService(row.id);
+                handleDeleteUser(row.id);
               }
               e.target.value = "";
             }}
           >
-            <option value="">Action</option>
-            <option value="edit">✏️ Edit </option>
+            <option value="" className="">
+              Action
+            </option>
+            <option value="view">👁️ View</option>
+            <option value="edit">✏️ Edit</option>
             <option value="delete">🗑️ Delete</option>
           </select>
         </div>
@@ -251,7 +280,9 @@ const Services = () => {
       },
     },
   };
-
+  if (loading) {
+    return <Loader />;
+  }
   return (
     <div className="bg-gray-100">
       <div className="flex flex-col lg:flex-row">
@@ -259,9 +290,9 @@ const Services = () => {
         <div className="overflow-x-auto w-full">
           <main className="flex-1 p-6 space-y-6">
             <header className="flex justify-between items-center flex-wrap gap-4">
-              <h1 className="text-3xl font-bold text-gray-800">Services</h1>
+              <h1 className="text-3xl font-bold text-gray-800">All Users</h1>
               <Link
-                to={"/admin/service/create"}
+                to={"/admin/user/create"}
                 className="py-2 px-6 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
               >
                 Add New &#43;
@@ -271,12 +302,12 @@ const Services = () => {
             <div className="bg-white p-6 rounded shadow">
               <div className="flex flex-col sm:flex-row justify-between items-center mb-4">
                 <h2 className="text-xl font-medium text-gray-800">
-                  Services List
+                  Users List
                 </h2>
                 <div className="relative mt-2 sm:mt-0 w-full sm:w-auto">
                   <input
                     type="text"
-                    placeholder="Search by title or description..."
+                    placeholder="Search by name or email..."
                     value={searchTerm}
                     onChange={handleSearch}
                     className="w-full p-3 pl-10 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -297,9 +328,8 @@ const Services = () => {
                   </svg>
                 </div>
               </div>
-
               {loading ? (
-                <p>Loading services...</p>
+                <p>Loading users...</p>
               ) : error ? (
                 <p className="text-red-500">{error}</p>
               ) : (
@@ -323,4 +353,4 @@ const Services = () => {
   );
 };
 
-export default Services;
+export default Users;
