@@ -1,17 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useContext } from "react";
 import Sidebar from "../../components/admin/Sidebar";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import API from "../../api";
+import { CountryContext } from "../../context/CountryContext";
 const BASE_URL = process.env.REACT_APP_BASE_URL;
-// Sample countries and roles
-const countries = [
-  "United States",
-  "India",
-  "Canada",
-  "Australia",
-  "United Kingdom",
-];
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState("profile");
@@ -30,6 +23,8 @@ const Profile = () => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [admin, setAdmin] = useState(null);
+
+  const { countries } = useContext(CountryContext);
 
   useEffect(() => {
     const fetchAdminId = async () => {
@@ -176,7 +171,7 @@ const Profile = () => {
       if (activeTab === "password") {
         // Only include password if it's not empty
         if (formData.password.trim() !== "") {
-          formDataToSend.password = formData.password;
+          formDataToSend.append("password", formData.password);
         }
 
         await API.put(

@@ -40,21 +40,17 @@ const Dashboard = () => {
       try {
         const response = await API.get("/api/admin/dashboard");
 
-        // Ensure the response is an array
-        if (!Array.isArray(response.data)) {
-          throw new Error("Invalid response format");
-        }
+        const getData = response.data;
 
-        const postsFromAPI = response.data.map((data) => ({
-          title: data.title || "N/A",
-          count: data.count || "N/A",
-          backgroundColor: data.backgroundColor || "N/A",
-          shadow: data.shadow || "N/A",
-          darkShadow: data.darkShadow || "N/A",
-          link: data.link || "N/A",
-        }));
+        setStats({
+          totalUsers: getData.totalUsers || 0,
+          totalClubs: getData.totalClubs || 0,
+          totalPosts: getData.totalPosts || 0,
+          totalUsersRevenue: getData.totalUsersRevenue || 0,
+          totalClubsRevenue: getData.totalClubsRevenue || 0,
+          totalPostApplicant: getData.totalPostApplicant || 0,
 
-        setStats(postsFromAPI);
+        });
       } catch (error) {
         console.error("Error fetching dashboard:", error);
         setError(error.response?.data?.message || "Failed to fetch dashboard");
@@ -363,7 +359,56 @@ const Dashboard = () => {
             <p className="text-red-500">{error}</p>
           ) : (
             <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {stats.map((card, index) => (
+              {[
+                {
+                  title: "Total Registered Clubs",
+                  count: stats.totalUsers,
+                  backgroundColor: "#36A2EB", // Blue
+                  shadow: "shadow-blue-400/50",
+                  darkShadow: "shadow-blue-900/50",
+                  link: "/admin/clubs",
+                },
+                {
+                  title: "Total Registered Players",
+                  count: stats.totalClubs,
+                  backgroundColor: "#FFCE56", // Yellow
+                  shadow: "shadow-yellow-400/50",
+                  darkShadow: "shadow-yellow-900/50",
+                  link: "/admin/users",
+                },
+                {
+                  title: "Total Posts",
+                  count: stats.totalPosts,
+                  backgroundColor: "#9966FF", // Purple
+                  shadow: "shadow-purple-400/50",
+                  darkShadow: "shadow-purple-900/50",
+                  link: "/admin/posts",
+                },
+                {
+                  title: "Total Club Generated Revenue",
+                  count: stats.totalClubsRevenue,
+                  backgroundColor: "#4CAF50", // Green
+                  shadow: "shadow-green-400/50",
+                  darkShadow: "shadow-green-900/50",
+                  link: "/admin/subscription-purchase",
+                },
+                {
+                  title: "Total Player Generated Revenue",
+                  count: stats.totalUsersRevenue,
+                  backgroundColor: "#FF5733", // Orange
+                  shadow: "shadow-orange-400/50",
+                  darkShadow: "shadow-orange-900/50",
+                  link: "/admin/user-subscription-purchase",
+                },
+                {
+                  title: "Total Post Applicants",
+                  count: stats.totalPostApplicant,
+                  backgroundColor: "#E53935", // Red
+                  shadow: "shadow-red-400/50",
+                  darkShadow: "shadow-red-900/50",
+                  link: "/admin/users",
+                },
+              ].map((card, index) => (
                 <div
                   key={index}
                   className={`relative p-8 min-h-[160px] rounded-xl text-white transform transition duration-300 hover:-translate-y-2 hover:shadow-2xl ${card.shadow} dark:${card.darkShadow}`}

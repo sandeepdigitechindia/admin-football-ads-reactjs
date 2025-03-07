@@ -1,21 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import Sidebar from "../../../components/admin/Sidebar";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import API from "../../../api";
+import { CountryContext } from "../../../context/CountryContext";
 const BASE_URL = process.env.REACT_APP_BASE_URL;
-const countries = [
-  "United States",
-  "India",
-  "Canada",
-  "Australia",
-  "United Kingdom",
-];
+
 const roles = ["player", "coach", "agent", "club"];
 const AdminClubEdit = () => {
   const [formData, setFormData] = useState({
     club_name: "",
+    club_desc: "",
     club_logo: null,
     first_name: "",
     last_name: "",
@@ -30,7 +26,7 @@ const AdminClubEdit = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-
+  const { countries } = useContext(CountryContext);
   // Fetch club data from API
   useEffect(() => {
     const fetchClub = async () => {
@@ -50,6 +46,9 @@ const AdminClubEdit = () => {
 
     if (!formData.club_name.trim()) {
       newErrors.club_name = "Club Name is required.";
+    }
+    if (!formData.club_desc.trim()) {
+      newErrors.club_desc = "Club Desc is required.";
     }
 
     // first Name validation
@@ -117,6 +116,7 @@ const AdminClubEdit = () => {
 
       // Append text fields
       formDataToSend.append("club_name", formData.club_name);
+      formDataToSend.append("club_desc", formData.club_desc);
       formDataToSend.append("first_name", formData.first_name);
       formDataToSend.append("last_name", formData.last_name);
       formDataToSend.append("email", formData.email);
@@ -332,6 +332,32 @@ const AdminClubEdit = () => {
                 />
                 {errors.phone && (
                   <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
+                )}
+              </div>
+
+              {/* Club Desc Field */}
+              <div className="mb-4">
+                <label
+                  htmlFor="club_desc"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Club Desc <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  name="club_desc"
+                  id="club_desc"
+                  value={formData.club_desc}
+                  onChange={handleChange}
+                  className={`w-full p-3 border ${
+                    errors.club_desc ? "border-red-500" : "border-gray-300"
+                  } rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                  rows="3"
+                  placeholder="Enter your Club Desc"
+                ></textarea>
+                {errors.club_desc && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.club_desc}
+                  </p>
                 )}
               </div>
 

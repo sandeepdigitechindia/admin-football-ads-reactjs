@@ -1,4 +1,4 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import {
   FaBars,
   FaTimes,
@@ -17,34 +17,23 @@ import {
   FaEnvelope,
   FaQuestionCircle,
 } from "react-icons/fa";
-import { useState } from "react";
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { useState,useContext } from "react";
+import { AuthContext } from "../../context/AuthContext";
+
 
 const Sidebar = () => {
   const location = useLocation();
-  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
-  const [isUsersOpen, setIsUsersOpen] = useState(false);
+ 
   const [showModal, setShowModal] = useState(false);
   const [openSubMenus, setOpenSubMenus] = useState({});
+  const { admin, logout } = useContext(AuthContext);
 
   const toggleSubMenu = (menuName) => {
     setOpenSubMenus((prev) => ({
       ...prev,
       [menuName]: !prev[menuName],
     }));
-  };
-
-  // Handle logout action
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
-    navigate("/");
-    toast.success("You have been logged out.", {
-      position: "top-right",
-      autoClose: 3000,
-    });
   };
 
   // Open modal
@@ -127,9 +116,6 @@ const Sidebar = () => {
     setIsOpen(!isOpen);
   };
 
-  const toggleUsersDropdown = () => {
-    setIsUsersOpen(!isUsersOpen);
-  };
 
   return (
     <>
@@ -146,12 +132,13 @@ const Sidebar = () => {
               >
                 Cancel
               </button>
+              {admin && (
               <button
-                onClick={handleLogout}
+                onClick={logout}
                 className="py-2 px-4 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
               >
                 Logout
-              </button>
+              </button>)}
             </div>
           </div>
         </div>

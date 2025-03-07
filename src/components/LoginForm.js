@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useContext,useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
@@ -13,7 +14,7 @@ const LoginForm = () => {
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-
+  const { login } = useContext(AuthContext);
   const validate = () => {
     const newErrors = {};
 
@@ -56,7 +57,7 @@ const LoginForm = () => {
 
       // Store token in local storage
       localStorage.setItem("token", token);
-      localStorage.setItem("role", admin.role); 
+      login(admin);
 
       navigate("/admin/dashboard");
       toast.success("Login successful!", {

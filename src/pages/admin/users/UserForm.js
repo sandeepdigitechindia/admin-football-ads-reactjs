@@ -1,17 +1,12 @@
-import React, { useState } from "react";
+import React, { useState,useContext } from "react";
 import Sidebar from "../../../components/admin/Sidebar";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import API from "../../../api";
+import { CountryContext } from "../../../context/CountryContext";
 const BASE_URL = process.env.REACT_APP_BASE_URL;
-const countries = [
-  "United States",
-  "India",
-  "Canada",
-  "Australia",
-  "United Kingdom",
-];
+
 const roles = ["player", "coach", "agent", "club"];
 const UserForm = () => {
   const [formData, setFormData] = useState({
@@ -29,7 +24,7 @@ const UserForm = () => {
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-
+  const { countries } = useContext(CountryContext);
   const validate = () => {
     const newErrors = {};
 
