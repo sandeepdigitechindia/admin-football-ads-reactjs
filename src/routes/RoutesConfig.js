@@ -29,6 +29,11 @@ import AdminServices from "../pages/admin/services/Services";
 import AdminServiceForm from "../pages/admin/services/ServiceForm";
 import AdminServiceEdit from "../pages/admin/services/AdminServiceEdit";
 
+// Meta Tags
+import MetaTags from "../pages/admin/metatags/MetaTags";
+import MetaTagForm from "../pages/admin/metatags/MetaTagForm";
+import MetaTagEdit from "../pages/admin/metatags/MetaTagEdit";
+
 // Testimonials
 import AdminTestimonials from "../pages/admin/testimonials/Testimonials";
 import AdminTestimonialForm from "../pages/admin/testimonials/TestimonialForm";
@@ -119,6 +124,11 @@ const RoutesConfig = () => {
         <Route path="/admin/services" element={<AdminServices />} />
         <Route path="/admin/service/create" element={<AdminServiceForm />} />
         <Route path="/admin/service/edit/:id" element={<AdminServiceEdit />} />
+
+        <Route path="/admin/meta-tags" element={<MetaTags />} />
+        <Route path="/admin/meta-tag/create" element={<MetaTagForm />} />
+        <Route path="/admin/meta-tag/edit/:id" element={<MetaTagEdit />} />
+
         <Route path="/admin/testimonials" element={<AdminTestimonials />} />
         <Route
           path="/admin/testimonial/create"

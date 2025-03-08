@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "../../../components/admin/Sidebar";
 import DataTable from "react-data-table-component";
-import { Link, useNavigate } from "react-router-dom";
 import API from "../../../api";
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 const UserSubscriptionPurchase = () => {

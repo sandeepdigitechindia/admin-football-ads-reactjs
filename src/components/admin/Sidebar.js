@@ -89,6 +89,11 @@ const Sidebar = () => {
       icon: <FaTools />,
     },
     {
+      name: "Meta Tags",
+      link: "/admin/meta-tags",
+      icon: <FaTools />,
+    },
+    {
       name: "Testimonials",
       link: "/admin/testimonials",
       icon: <FaQuoteLeft />,
