@@ -5,18 +5,21 @@ import { ToastContainer } from "react-toastify";
 import RoutesConfig from "./routes/RoutesConfig";
 import { AuthProvider } from "./context/AuthContext";
 import DynamicWrapper from "./components/DynamicWrapper";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 const App = () => {
   return (
     <>
-    <AuthProvider>
-      <ToastContainer position="top-right" autoClose={3000} />
-      <Router>
-        <DynamicWrapper>
-          <RoutesConfig />
-        </DynamicWrapper>
-      </Router>
-      </AuthProvider>
+      <ErrorBoundary>
+        <AuthProvider>
+          <ToastContainer position="top-right" autoClose={3000} />
+          <Router>
+            <DynamicWrapper>
+              <RoutesConfig />
+            </DynamicWrapper>
+          </Router>
+        </AuthProvider>
+      </ErrorBoundary>
     </>
   );
 };

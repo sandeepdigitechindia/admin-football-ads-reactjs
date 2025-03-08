@@ -66,6 +66,7 @@ import AdminPostApplicant from "../pages/admin/posts/AdminPostApplicant";
 // Other Pages
 import ContactUs from "../pages/admin/pages/ContactUs";
 import Newsletters from "../pages/admin/pages/Newsletters";
+import NotFoundPage from "../pages/NotFoundPage";
 
 import { CountryProvider } from "../context/CountryContext";
 
@@ -192,6 +193,8 @@ const RoutesConfig = () => {
         <Route path="/admin/contact-us" element={<ContactUs />} />
         <Route path="/admin/newsletters" element={<Newsletters />} />
       </Route>
+      {/* Catch all unmatched routes */}
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 };
