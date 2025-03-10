@@ -28,8 +28,8 @@ const Users = () => {
 
         const usersFromAPI = response.data.map((user) => ({
           id: user._id || "",
-          firstName: user.first_name || "N/A",
-          lastName: user.last_name || "N/A",
+          first_name: user.first_name || "N/A",
+          last_name: user.last_name || "N/A",
           phone: user.phone || "N/A",
           email: user.email || "N/A",
           profilePic: BASE_URL + user.profile || "/common/man.png",
@@ -87,8 +87,8 @@ const Users = () => {
     } else {
       const filtered = originalData.filter(
         (user) =>
-          user.firstName.toLowerCase().includes(value) ||
-          user.lastName.toLowerCase().includes(value) ||
+          user.first_name.toLowerCase().includes(value) ||
+          user.last_name.toLowerCase().includes(value) ||
           user.email.toLowerCase().includes(value)
       );
       setData(filtered);
@@ -136,7 +136,7 @@ const Users = () => {
       selector: (row) => (
         <img
           src={row.profilePic}
-          alt={`${row.firstName} ${row.lastName}`}
+          alt={`${row.first_name} ${row.last_name}`}
           className="w-12 h-12 rounded-full"
         />
       ),
@@ -144,7 +144,7 @@ const Users = () => {
     },
     {
       name: "Name",
-      selector: (row) => `${row.firstName} ${row.lastName}`,
+      selector: (row) => `${row.first_name} ${row.last_name}`,
       sortable: true,
     },
     {

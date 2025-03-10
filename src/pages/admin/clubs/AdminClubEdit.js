@@ -26,6 +26,7 @@ const AdminClubEdit = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { countries } = useContext(CountryContext);
   // Fetch club data from API
   useEffect(() => {
@@ -425,10 +426,11 @@ const AdminClubEdit = () => {
                   htmlFor="password"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Password
+                  Password <span className="text-red-500">*</span>
                 </label>
+                <div className="flex relative">
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   id="password"
                   name="password"
                   onChange={handleChange}
@@ -437,6 +439,16 @@ const AdminClubEdit = () => {
                   } focus:outline-none focus:ring focus:ring-blue-300`}
                   placeholder="Enter your password"
                 />
+                <button
+                  type="button"
+                  className="text-gray-500 hover:text-gray-700 absolute right-4 top-2"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  <i
+                    className={showPassword ? "fas fa-eye-slash" : "fas fa-eye"}
+                  ></i>
+                </button>
+                </div>
                 {errors.password && (
                   <p className="text-red-500 text-sm mt-1">{errors.password}</p>
                 )}

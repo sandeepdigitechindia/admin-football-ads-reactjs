@@ -4,6 +4,8 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import API from "../../../api";
+import { CKEditor } from "@ckeditor/ckeditor5-react";
+import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 const PostForm = () => {
@@ -279,15 +281,28 @@ const PostForm = () => {
                 <label className="block text-gray-700 font-medium mb-2">
                   Long Description
                 </label>
-                <textarea
-                  name="long_description"
+                <CKEditor
+                  editor={ClassicEditor}
+                  data={formData.long_description}
+                  config={{
+                    licenseKey: process.env.REACT_APP_CKEDITOR_LICENSE_KEY,
+                  }}
+                  
+                  onChange={(event, editor) => {
+                    const content = editor.getData();
+                    setFormData({ ...formData, long_description: content });
+                  }}
+                />
+                {/* <textarea
+                  name="long_description" 
+                  typpe
                   value={formData.long_description}
                   onChange={handleChange}
                   className={`w-full p-3 border ${
                     errors.long_description ? "border-red-500" : "border-gray-300"
                   } rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500`}
                   rows="4"
-                ></textarea>
+                ></textarea> */}
                 {errors.long_description && (
                   <p className="text-red-500 text-sm mt-1">
                     {errors.long_description}

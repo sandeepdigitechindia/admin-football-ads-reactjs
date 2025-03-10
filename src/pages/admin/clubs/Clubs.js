@@ -19,7 +19,7 @@ const Clubs = () => {
   useEffect(() => {
     const fetchClubs = async () => {
       try {
-        const response = await API.get("/api/admin/users?role=club");
+        const response = await API.get("/api/admin/users");
 
         // Ensure the response is an array
         if (!Array.isArray(response.data)) {
@@ -30,14 +30,15 @@ const Clubs = () => {
           id: club._id || "",
           clubName: club.club_name || "N/A",
           clubLogo: BASE_URL+club.club_logo || "/common/club.png",
-          firstName: club.first_name || "N/A",
-          lastName: club.last_name || "N/A",
+          role: club.role || "N/A",
+          first_name: club.first_name || "N/A",
+          last_name: club.last_name || "N/A",
           phone: club.phone || "N/A",
           email: club.email || "N/A",
           profilePic: club.profile || "/common/man.png",
           status: club.isActive ? "Active" : "Deactivate",
         }));
-
+       
         setData(clubsFromAPI);
         setOriginalData(clubsFromAPI);
       } catch (error) {
@@ -87,8 +88,9 @@ const Clubs = () => {
     } else {
       const filtered = originalData.filter(
         (club) =>
-          club.firstName.toLowerCase().includes(value) ||
-          club.lastName.toLowerCase().includes(value) ||
+          club.role.toLowerCase().includes(value) ||
+          club.first_name.toLowerCase().includes(value) ||
+          club.last_name.toLowerCase().includes(value) ||
           club.email.toLowerCase().includes(value)
       );
       setData(filtered);
@@ -152,15 +154,20 @@ const Clubs = () => {
       selector: (row) => (
         <img
           src={row.profilePic}
-          alt={`${row.firstName} ${row.lastName}`}
+          alt={`${row.first_name} ${row.last_name}`}
           className="w-12 h-12 rounded-full"
         />
       ),
       center: true,
     },
     {
+      name: "Role",
+      selector: (row) => row.role,
+      sortable: true,
+    },
+    {
       name: "Name",
-      selector: (row) => `${row.firstName} ${row.lastName}`,
+      selector: (row) => `${row.first_name} ${row.last_name}`,
       sortable: true,
     },
     {

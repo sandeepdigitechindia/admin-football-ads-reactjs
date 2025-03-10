@@ -26,11 +26,17 @@ const Settings = () => {
     about_page_content: "",
     terms_and_conditions: "",
     privacy_policy: "",
+
+    wcu_count1: "",
+    wcu_title1: "",
+    wcu_count2: "",
+    wcu_title2: "",
+    wcu_count3: "",
+    wcu_title3: "",
   });
 
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
- 
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -50,6 +56,13 @@ const Settings = () => {
 
           terms_and_conditions: getData.terms_and_conditions || "",
           privacy_policy: getData.privacy_policy || "",
+
+          wcu_count1: getData.wcu_count1 || "",
+          wcu_title1: getData.wcu_title1 || "",
+          wcu_count2: getData.wcu_count2 || "",
+          wcu_title2: getData.wcu_title2 || "",
+          wcu_count3: getData.wcu_count3 || "",
+          wcu_title3: getData.wcu_title3 || "",
 
           official_mail: getData.official_mail || "",
           official_number: getData.official_number || "",
@@ -131,6 +144,25 @@ const Settings = () => {
         newErrors.terms_and_conditions = "Terms and Conditions is required.";
       if (!formData.privacy_policy.trim())
         newErrors.privacy_policy = "Privacy Policy is required.";
+    }
+
+    if (activeTab === "why_choose_us") {
+      // policy validation
+
+      if (!formData.wcu_count1.trim())
+        newErrors.wcu_count1 = "Why Choose Us count1 is required.";
+      if (!formData.wcu_title1.trim())
+        newErrors.wcu_title1 = "Why Choose Us title1 is required.";
+
+      if (!formData.wcu_count2.trim())
+        newErrors.wcu_count2 = "Why Choose Us count2 is required.";
+      if (!formData.wcu_title2.trim())
+        newErrors.wcu_title2 = "Why Choose Us title2 is required.";
+
+      if (!formData.wcu_count3.trim())
+        newErrors.wcu_count3 = "Why Choose Us count3 is required.";
+      if (!formData.wcu_title3.trim())
+        newErrors.wcu_title3 = "Why Choose Us title3 is required.";
     }
 
     setErrors(newErrors);
@@ -240,6 +272,31 @@ const Settings = () => {
         });
       }
 
+      if (activeTab === "why_choose_us") {
+        formDataToSend.append("wcu_count1", formData.wcu_count1);
+        formDataToSend.append("wcu_title1", formData.wcu_title1);
+
+        formDataToSend.append("wcu_count2", formData.wcu_count2);
+        formDataToSend.append("wcu_title2", formData.wcu_title2);
+
+        formDataToSend.append("wcu_count3", formData.wcu_count3);
+        formDataToSend.append("wcu_title3", formData.wcu_title3);
+
+        await API.put(
+          `${BASE_URL}/api/admin/settings/67a34a95a6870c076223ca18`,
+          formDataToSend,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+        toast.success("Policy Changed Successfully!", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+      }
+
       setErrors({});
     } catch (error) {
       toast.error(
@@ -289,6 +346,17 @@ const Settings = () => {
                 onClick={() => handleTabChange("policy")}
               >
                 Policies
+              </button>
+
+              <button
+                className={`py-2 px-4 ${
+                  activeTab === "why_choose_us"
+                    ? "text-blue-600 border-b-2 border-blue-600"
+                    : "text-gray-600"
+                }`}
+                onClick={() => handleTabChange("why_choose_us")}
+              >
+                Why Choose Us
               </button>
             </div>
           </div>
@@ -758,6 +826,161 @@ const Settings = () => {
                   {errors.privacy_policy && (
                     <p className="text-red-500 text-sm mt-1">
                       {errors.privacy_policy}
+                    </p>
+                  )}
+                </div>
+
+                <button
+                  type="submit"
+                  className="bg-blue-600 text-white py-2 px-4 rounded-lg"
+                  disabled={loading}
+                >
+                  {loading ? "Update..." : "Update"}
+                </button>
+              </form>
+            )}
+
+            {activeTab === "why_choose_us" && (
+              <form onSubmit={handleSubmit} noValidate>
+                {/* Policies  */}
+
+                {/* wcu count1 */}
+                <div className="mb-4">
+                  <label className="block text-gray-700 font-medium mb-2">
+                    Why Choose Us Count1 <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="wcu_count1"
+                    name="wcu_count1"
+                    value={formData.wcu_count1}
+                    onChange={handleChange}
+                    className={`w-full px-4 py-2 border rounded-lg ${
+                      errors.wcu_count1 ? "border-red-500" : "border-gray-300"
+                    } focus:outline-none focus:ring focus:ring-blue-300`}
+                    placeholder="Enter why choose us count1"
+                  />
+
+                  {errors.wcu_count1 && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.wcu_count1}
+                    </p>
+                  )}
+                </div>
+
+                {/* wcu title1 */}
+                <div className="mb-4">
+                  <label className="block text-gray-700 font-medium mb-2">
+                    Why Choose Us Title1 <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="wcu_title1"
+                    name="wcu_title1"
+                    value={formData.wcu_title1}
+                    onChange={handleChange}
+                    className={`w-full px-4 py-2 border rounded-lg ${
+                      errors.wcu_title1 ? "border-red-500" : "border-gray-300"
+                    } focus:outline-none focus:ring focus:ring-blue-300`}
+                    placeholder="Enter why choose us title1"
+                  />
+                  {errors.wcu_title1 && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.wcu_title1}
+                    </p>
+                  )}
+                </div>
+
+                {/* wcu count2 */}
+                <div className="mb-4">
+                  <label className="block text-gray-700 font-medium mb-2">
+                    Why Choose Us Count2 <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="wcu_count2"
+                    name="wcu_count2"
+                    value={formData.wcu_count2}
+                    onChange={handleChange}
+                    className={`w-full px-4 py-2 border rounded-lg ${
+                      errors.wcu_count2 ? "border-red-500" : "border-gray-300"
+                    } focus:outline-none focus:ring focus:ring-blue-300`}
+                    placeholder="Enter why choose us count2"
+                  />
+
+                  {errors.wcu_count2 && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.wcu_count2}
+                    </p>
+                  )}
+                </div>
+
+                {/* wcu title2 */}
+                <div className="mb-4">
+                  <label className="block text-gray-700 font-medium mb-2">
+                    Why Choose Us Title2 <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="wcu_title2"
+                    name="wcu_title2"
+                    value={formData.wcu_title2}
+                    onChange={handleChange}
+                    className={`w-full px-4 py-2 border rounded-lg ${
+                      errors.wcu_title2 ? "border-red-500" : "border-gray-300"
+                    } focus:outline-none focus:ring focus:ring-blue-300`}
+                    placeholder="Enter why choose us title2"
+                  />
+                  {errors.wcu_title2 && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.wcu_title2}
+                    </p>
+                  )}
+                </div>
+
+                {/* wcu count3 */}
+                <div className="mb-4">
+                  <label className="block text-gray-700 font-medium mb-2">
+                    Why Choose Us Count3 <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="wcu_count3"
+                    name="wcu_count3"
+                    value={formData.wcu_count3}
+                    onChange={handleChange}
+                    className={`w-full px-4 py-2 border rounded-lg ${
+                      errors.wcu_count3 ? "border-red-500" : "border-gray-300"
+                    } focus:outline-none focus:ring focus:ring-blue-300`}
+                    placeholder="Enter why choose us count3"
+                  />
+
+                  {errors.wcu_count3 && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.wcu_count3}
+                    </p>
+                  )}
+                </div>
+
+                {/* wcu title3 */}
+                <div className="mb-4">
+                  <label className="block text-gray-700 font-medium mb-2">
+                    Why Choose Us Title3 <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="wcu_title3"
+                    name="wcu_title3"
+                    value={formData.wcu_title3}
+                    onChange={handleChange}
+                    className={`w-full px-4 py-2 border rounded-lg ${
+                      errors.wcu_title3 ? "border-red-500" : "border-gray-300"
+                    } focus:outline-none focus:ring focus:ring-blue-300`}
+                    placeholder="Enter why choose us title3"
+                  />
+                  {errors.wcu_title3 && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.wcu_title3}
                     </p>
                   )}
                 </div>

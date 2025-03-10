@@ -1,4 +1,4 @@
-import React, { useContext,useState } from "react";
+import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { toast } from "react-toastify";
@@ -14,6 +14,7 @@ const LoginForm = () => {
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { login } = useContext(AuthContext);
   const validate = () => {
     const newErrors = {};
@@ -51,7 +52,10 @@ const LoginForm = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post(`${BASE_URL}/api/admin/login`, formData);
+      const response = await axios.post(
+        `${BASE_URL}/api/admin/login`,
+        formData
+      );
       // Extract token and user role
       const { token, admin } = response.data;
 
@@ -132,8 +136,9 @@ const LoginForm = () => {
               >
                 Password <span className="text-red-500">*</span>
               </label>
+              <div className="flex relative">
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 id="password"
                 name="password"
                 value={formData.password}
@@ -143,6 +148,17 @@ const LoginForm = () => {
                 } focus:outline-none focus:ring focus:ring-blue-300`}
                 placeholder="Enter your password"
               />
+              <button
+                type="button"
+                className="text-gray-500 hover:text-gray-700 absolute right-4 top-2"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                <i
+                  className={showPassword ? "fas fa-eye-slash" : "fas fa-eye"}
+                ></i>
+              </button>
+              </div>
+             
               {errors.password && (
                 <p className="text-red-500 text-sm mt-1">{errors.password}</p>
               )}

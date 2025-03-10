@@ -25,6 +25,8 @@ const ClubForm = () => {
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const { countries } = useContext(CountryContext);
 
@@ -434,8 +436,9 @@ const ClubForm = () => {
                 >
                   Password <span className="text-red-500">*</span>
                 </label>
+                <div className="flex relative">
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   id="password"
                   name="password"
                   value={formData.password}
@@ -445,6 +448,16 @@ const ClubForm = () => {
                   } focus:outline-none focus:ring focus:ring-blue-300`}
                   placeholder="Enter your password"
                 />
+                <button
+                  type="button"
+                  className="text-gray-500 hover:text-gray-700 absolute right-4 top-2"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  <i
+                    className={showPassword ? "fas fa-eye-slash" : "fas fa-eye"}
+                  ></i>
+                </button>
+                </div>
                 {errors.password && (
                   <p className="text-red-500 text-sm mt-1">{errors.password}</p>
                 )}
@@ -458,8 +471,9 @@ const ClubForm = () => {
                 >
                   Confirm Password <span className="text-red-500">*</span>
                 </label>
+                <div className="flex relative">
                 <input
-                  type="password"
+                  type={showConfirmPassword ? "text" : "password"}
                   id="confirmPassword"
                   name="confirmPassword"
                   value={formData.confirmPassword}
@@ -471,6 +485,16 @@ const ClubForm = () => {
                   } focus:outline-none focus:ring focus:ring-blue-300`}
                   placeholder="Confirm your password"
                 />
+                <button
+                  type="button"
+                  className="text-gray-500 hover:text-gray-700 absolute right-4 top-2"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  <i
+                    className={showConfirmPassword ? "fas fa-eye-slash" : "fas fa-eye"}
+                  ></i>
+                </button>
+                </div>
                 {errors.confirmPassword && (
                   <p className="text-red-500 text-sm mt-1">
                     {errors.confirmPassword}
