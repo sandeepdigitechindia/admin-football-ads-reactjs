@@ -7,47 +7,44 @@ import "react-toastify/dist/ReactToastify.css";
 import API from "../../../api";
 import Loader from "../../../components/Loader";
 const ContactUs = () => {
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState([]);
+  const [originalData, setOriginalData] = useState([]);
 
-    const [error, setError] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [data, setData] = useState([]);
-    const [originalData, setOriginalData] = useState([]);
+  useEffect(() => {
+    const fetchContactUs = async () => {
+      try {
+        const response = await API.get("/api/admin/contact");
 
-    useEffect(() => {
-      const fetchContactUs = async () => {
-        try {
-          const response = await API.get("/api/admin/contact");
-  
-          // Ensure the response is an array
-          if (!Array.isArray(response.data)) {
-            throw new Error("Invalid response format");
-          }
-  
-          const getFromAPI = response.data.map((contact) => ({
-            id: contact._id || "",
-            name: contact.name || "N/A",
-            email: contact.email || "N/A",
-            number: contact.number || "N/A",
-            subject: contact.subject || "N/A",
-            message: contact.message || "N/A",
-            status: contact.status === "true" ? "Seen" : "Unseen",
-          }));
-  
-          setData(getFromAPI);
-          setOriginalData(getFromAPI);
-        } catch (error) {
-          console.error("Error fetching contact:", error);
-          setError(
-            error.response?.data?.message || "Failed to fetch contact"
-          );
-        } finally {
-          setLoading(false);
+        // Ensure the response is an array
+        if (!Array.isArray(response.data)) {
+          throw new Error("Invalid response format");
         }
-      };
-  
-      fetchContactUs();
-    }, []);
- 
+
+        const getFromAPI = response.data.map((contact) => ({
+          id: contact._id || "",
+          name: contact.name || "N/A",
+          email: contact.email || "N/A",
+          number: contact.number || "N/A",
+          subject: contact.subject || "N/A",
+          message: contact.msg || "N/A",
+          status: contact.status === "true" ? "Seen" : "Unseen",
+        }));
+
+        setData(getFromAPI);
+        setOriginalData(getFromAPI);
+      } catch (error) {
+        console.error("Error fetching contact:", error);
+        setError(error.response?.data?.message || "Failed to fetch contact");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchContactUs();
+  }, []);
+
   const [searchTerm, setSearchTerm] = useState("");
 
   const handleSearch = (e) => {
@@ -69,17 +66,17 @@ const ContactUs = () => {
   const handleStatusChange = async (contactId, newStatus) => {
     try {
       const updatedStatus = newStatus === "true";
-    
+
       const requestBody = {
         status: updatedStatus,
       };
-    
+
       await API.put(`/api/admin/contact/${contactId}`, requestBody, {
         headers: {
           "Content-Type": "application/json",
         },
       });
-    
+
       const updatedData = data.map((contact) =>
         contact.id === contactId
           ? {
@@ -103,7 +100,6 @@ const ContactUs = () => {
         }
       );
     }
-    
   };
 
   // Handle Delete Contact Us (e.g., delete from API or state)
@@ -119,21 +115,13 @@ const ContactUs = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await API.delete(
-            `/api/admin/contact/permanent/${contactId}`
-          );
+          await API.delete(`/api/admin/contact/permanent/${contactId}`);
           setData((prevContacts) =>
-            prevContacts.filter(
-              (contact) => contact.id !== contactId
-            )
+            prevContacts.filter((contact) => contact.id !== contactId)
           );
           Swal.fire("Deleted!", "Contact has been deleted.", "success");
         } catch (error) {
-          Swal.fire(
-            "Error!",
-            "Failed to delete contact. Try again.",
-            "error"
-          );
+          Swal.fire("Error!", "Failed to delete contact. Try again.", "error");
         }
       }
     });
@@ -167,6 +155,12 @@ const ContactUs = () => {
     {
       name: "Subject",
       selector: (row) => row.subject,
+      sortable: true,
+      center: true,
+    },
+    {
+      name: "Message",
+      selector: (row) => row.message,
       sortable: true,
       center: true,
     },
@@ -281,17 +275,14 @@ const ContactUs = () => {
     <div className="bg-gray-100">
       <div className="flex flex-col lg:flex-row">
         <Sidebar />
+        <div className="overflow-x-auto w-full">
         <main className="flex-1 p-6 space-y-6">
           <header className="flex justify-between items-center flex-wrap gap-4">
-            <h1 className="text-3xl font-bold text-gray-800">
-              Contact Us
-            </h1>
+            <h1 className="text-3xl font-bold text-gray-800">Contact Us</h1>
           </header>
           <div className="bg-white p-6 rounded shadow">
             <div className="flex flex-col sm:flex-row justify-between items-center mb-4">
-              <h2 className="text-xl font-medium text-gray-800">
-              Contacts
-              </h2>
+              <h2 className="text-xl font-medium text-gray-800">Contacts</h2>
               <div className="relative mt-2 sm:mt-0 w-full sm:w-auto">
                 <input
                   type="text"
@@ -322,19 +313,20 @@ const ContactUs = () => {
               <p className="text-red-500">{error}</p>
             ) : (
               <div className="overflow-x-auto">
-            <DataTable
-              columns={columns}
-              data={data}
-              pagination
-              highlightOnHover
-              striped
-              responsive
-              customStyles={customStyles}
-            />
-            </div>
+                <DataTable
+                  columns={columns}
+                  data={data}
+                  pagination
+                  highlightOnHover
+                  striped
+                  responsive
+                  customStyles={customStyles}
+                />
+              </div>
             )}
           </div>
         </main>
+        </div>
       </div>
     </div>
   );
