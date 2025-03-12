@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Bar, Pie } from "react-chartjs-2";
+import { Bar } from "react-chartjs-2";
+// import { Bar, Pie } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -34,6 +35,8 @@ const Dashboard = () => {
   );
 
   const [stats, setStats] = useState([]);
+  const [chartData, setChartData] = useState(null);
+  const [chartUserData, setChartUserData] = useState(null);
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -49,7 +52,6 @@ const Dashboard = () => {
           totalUsersRevenue: getData.totalUsersRevenue || 0,
           totalClubsRevenue: getData.totalClubsRevenue || 0,
           totalPostApplicant: getData.totalPostApplicant || 0,
-
         });
       } catch (error) {
         console.error("Error fetching dashboard:", error);
@@ -60,6 +62,96 @@ const Dashboard = () => {
     };
 
     fetchDashboard();
+  }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await API.get(
+          "/api/admin/subscriptions/purchase-monthly-revenue"
+        );
+
+        const months = [
+          "January",
+          "February",
+          "March",
+          "April",
+          "May",
+          "June",
+          "July",
+          "August",
+          "September",
+          "October",
+          "November",
+          "December",
+        ];
+
+        const labels = response.data.map((d) => months[d._id - 1]);
+        const data = response.data.map((d) => d.totalRevenue);
+
+        setChartData({
+          labels,
+          datasets: [
+            {
+              label: "Total Revenue (€)",
+              data,
+              backgroundColor: "rgba(75, 192, 192, 0.2)",
+              borderColor: "rgba(75, 192, 192, 1)",
+              borderWidth: 1,
+            },
+          ],
+        });
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await API.get(
+          "/api/admin/user-subscriptions/purchase-monthly-revenue"
+        );
+
+        const months = [
+          "January",
+          "February",
+          "March",
+          "April",
+          "May",
+          "June",
+          "July",
+          "August",
+          "September",
+          "October",
+          "November",
+          "December",
+        ];
+
+        const labels = response.data.map((d) => months[d._id - 1]);
+        const data = response.data.map((d) => d.totalRevenue);
+
+        setChartUserData({
+          labels,
+          datasets: [
+            {
+              label: "Total Revenue (€)",
+              data,
+              backgroundColor: "rgba(75, 192, 192, 0.2)",
+              borderColor: "rgba(75, 192, 192, 1)",
+              borderWidth: 1,
+            },
+          ],
+        });
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchUserData();
   }, []);
 
   const navigate = useNavigate();
@@ -301,42 +393,29 @@ const Dashboard = () => {
   };
 
   // Example chart data for the revenue and subscription types
-  const revenueData = {
-    labels: ["January", "February", "March", "April", "May", "June"],
-    datasets: [
-      {
-        label: "Total Revenue ($)",
-        data: [500, 700, 900, 1200, 1500, 1800],
-        backgroundColor: "rgba(75, 192, 192, 0.2)",
-        borderColor: "rgba(75, 192, 192, 1)",
-        borderWidth: 1,
-      },
-    ],
-  };
-
-  const subscriptionData = {
-    labels: ["Users", "Clubs", "Agents", "Coaches", "Others"],
-    datasets: [
-      {
-        label: "Subscriptions",
-        data: [300, 120, 80, 50, 30],
-        backgroundColor: [
-          "#36A2EB",
-          "#FF6384",
-          "#4BC0C0",
-          "#FFCE56",
-          "#9966FF",
-        ],
-        hoverBackgroundColor: [
-          "#36A2EB",
-          "#FF6384",
-          "#4BC0C0",
-          "#FFCE56",
-          "#9966FF",
-        ],
-      },
-    ],
-  };
+  // const subscriptionData = {
+  //   labels: ["Users", "Clubs", "Agents", "Coaches", "Others"],
+  //   datasets: [
+  //     {
+  //       label: "Subscriptions",
+  //       data: [300, 120, 80, 50, 30],
+  //       backgroundColor: [
+  //         "#36A2EB",
+  //         "#FF6384",
+  //         "#4BC0C0",
+  //         "#FFCE56",
+  //         "#9966FF",
+  //       ],
+  //       hoverBackgroundColor: [
+  //         "#36A2EB",
+  //         "#FF6384",
+  //         "#4BC0C0",
+  //         "#FFCE56",
+  //         "#9966FF",
+  //       ],
+  //     },
+  //   ],
+  // };
   if (loading) {
     return <Loader />;
   }
@@ -434,24 +513,47 @@ const Dashboard = () => {
 
           {/* Total Revenue & Subscription Chart Section */}
           <section className="bg-white p-6 rounded shadow">
-            <h2 className="text-xl font-medium text-gray-800 mb-4">
-              Total Revenue & Subscription Breakdown
-            </h2>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Bar Chart for Total Revenue */}
-              <div className="col-span-1 h-72 sm:h-80 lg:h-[350px] flex items-center justify-center">
-                <Bar
-                  data={revenueData}
-                  options={{
-                    responsive: true,
-                    plugins: {
-                      title: { display: true, text: "Revenue Over Time" },
-                    },
-                  }}
-                />
+              <div className="col-span-1 h-72 sm:h-80 lg:h-[350px]">
+                <h2 className="text-xl font-medium text-gray-800 mb-4">
+                  Total Club Revenue & Subscription Purchase
+                </h2>
+                {chartData ? (
+                  <Bar
+                    data={chartData}
+                    options={{
+                      responsive: true,
+                      plugins: {
+                        title: { display: true, text: "Revenue Over Time" },
+                      },
+                    }}
+                  />
+                ) : (
+                  <p>Loading chart...</p>
+                )}
+              </div>
+
+              <div className="col-span-1 h-72 sm:h-80 lg:h-[350px]">
+                <h2 className="text-xl font-medium text-gray-800 mb-4">
+                  Total Player Revenue & Subscription Purchase
+                </h2>
+                {chartUserData ? (
+                  <Bar
+                    data={chartUserData}
+                    options={{
+                      responsive: true,
+                      plugins: {
+                        title: { display: true, text: "Revenue Over Time" },
+                      },
+                    }}
+                  />
+                ) : (
+                  <p>Loading User chart...</p>
+                )}
               </div>
               {/* Pie Chart for Subscription Breakdown */}
-              <div className="col-span-1 h-72 sm:h-80 lg:h-[350px] flex items-center justify-center">
+              {/* <div className="col-span-1 h-72 sm:h-80 lg:h-[350px] flex items-center justify-center">
                 <Pie
                   data={subscriptionData}
                   options={{
@@ -464,7 +566,7 @@ const Dashboard = () => {
                     },
                   }}
                 />
-              </div>
+              </div> */}
             </div>
           </section>
 
