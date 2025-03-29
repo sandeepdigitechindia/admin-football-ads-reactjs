@@ -12,6 +12,7 @@ const ClubForm = () => {
     club_name: "",
     club_desc: "",
     club_logo: null,
+    club_idcard: null,
     first_name: "",
     last_name: "",
     email: "",
@@ -103,7 +104,11 @@ const ClubForm = () => {
   };
 
   const handleFileChange = (e) => {
-    setFormData({ ...formData, club_logo: e.target.files[0] });
+    const { name, files } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: files[0],
+    }));
   };
 
   const handleChange = (e) => {
@@ -126,6 +131,7 @@ const ClubForm = () => {
       data.append("club_name", formData.club_name);
       data.append("club_desc", formData.club_desc);
       data.append("club_logo", formData.club_logo);
+      data.append("club_idcard", formData.club_idcard);
       data.append("first_name", formData.first_name);
       data.append("last_name", formData.last_name);
       data.append("email", formData.email);
@@ -148,6 +154,7 @@ const ClubForm = () => {
         club_name: "",
         club_desc: "",
         club_logo: null,
+        club_idcard: null,
         first_name: "",
         last_name: "",
         email: "",
@@ -228,6 +235,7 @@ const ClubForm = () => {
                 <input
                   type="file"
                   accept="image/*"
+                  name="club_logo"
                   onChange={handleFileChange}
                   className={`w-full p-3 border ${
                     errors.club_logo ? "border-red-500" : "border-gray-300"
@@ -236,6 +244,27 @@ const ClubForm = () => {
                 {errors.club_logo && (
                   <p className="text-red-500 text-sm mt-1">
                     {errors.club_logo}
+                  </p>
+                )}
+              </div>
+
+              {/* Club Id Card */}
+              <div className="mb-4">
+                <label className="block text-gray-700 font-medium mb-2">
+                  Club ID Card <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="file"
+                  // accept="image/*"
+                  name="club_idcard"
+                  onChange={handleFileChange}
+                  className={`w-full p-3 border ${
+                    errors.club_idcard ? "border-red-500" : "border-gray-300"
+                  } rounded-lg`}
+                />
+                {errors.club_idcard && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.club_idcard}
                   </p>
                 )}
               </div>

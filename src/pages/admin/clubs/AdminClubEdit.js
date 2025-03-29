@@ -13,6 +13,7 @@ const AdminClubEdit = () => {
     club_name: "",
     club_desc: "",
     club_logo: null,
+    club_idcard: null,
     first_name: "",
     last_name: "",
     email: "",
@@ -94,10 +95,13 @@ const AdminClubEdit = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+
   const handleFileChange = (e) => {
-    if (e.target.files.length > 0) {
-      setFormData({ ...formData, club_logo: e.target.files[0] });
-    }
+    const { name, files } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: files[0],
+    }));
   };
 
   const handleChange = (e) => {
@@ -134,6 +138,9 @@ const AdminClubEdit = () => {
       // Append file only if it's selected
       if (formData.club_logo instanceof File) {
         formDataToSend.append("club_logo", formData.club_logo);
+      }
+      if (formData.club_idcard instanceof File) {
+        formDataToSend.append("club_idcard", formData.club_idcard);
       }
 
       await API.put(`${BASE_URL}/api/admin/users/${id}`, formDataToSend, {
@@ -216,6 +223,7 @@ const AdminClubEdit = () => {
                 <input
                   type="file"
                   accept="image/*"
+                  name="club_logo"
                   onChange={handleFileChange}
                   className={`w-full p-3 border ${
                     errors.club_logo ? "border-red-500" : "border-gray-300"
@@ -229,6 +237,32 @@ const AdminClubEdit = () => {
                 {errors.club_logo && (
                   <p className="text-red-500 text-sm mt-1">
                     {errors.club_logo}
+                  </p>
+                )}
+              </div>
+
+              {/* Club Id Card */}
+              <div className="mb-4">
+                <label className="block text-gray-700 font-medium mb-2">
+                  Club Id Card <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="file"
+                  // accept="image/*"
+                  name="club_idcard"
+                  onChange={handleFileChange}
+                  className={`w-full p-3 border ${
+                    errors.club_idcard ? "border-red-500" : "border-gray-300"
+                  } rounded-lg`}
+                />
+                <img
+                  src={BASE_URL + formData.club_idcard}
+                  alt={`${formData.club_name}`}
+                  className="w-48 h-24 rounded-full mx-auto my-4"
+                />
+                {errors.club_idcard && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.club_idcard}
                   </p>
                 )}
               </div>
