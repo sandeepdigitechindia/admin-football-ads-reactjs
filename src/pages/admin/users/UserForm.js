@@ -77,12 +77,12 @@ const UserForm = () => {
     if (!formData.password) {
       newErrors.password = "Password is required.";
     } else if (
-      !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(
+      !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.])[A-Za-z\d@$!%*?&.]{8,}$/.test(
         formData.password
       )
     ) {
       newErrors.password =
-        "Password must be at least 8 characters, include uppercase, lowercase, number, and special character.";
+        "Password must be at least 8 characters, include uppercase, lowercase, number, and special character (e.g., @, $, ., etc.).";
     }
 
     // Confirm Password validation
