@@ -54,8 +54,9 @@ const UserForm = () => {
     // Phone validation
     if (!formData.phone.trim()) {
       newErrors.phone = "Phone number is required.";
-    } else if (!/^\d{10}$/.test(formData.phone)) {
-      newErrors.phone = "Phone number must be 10 digits.";
+    } else if (!/^\+?\d{1,3}[-\s]?\d{10}$/.test(formData.phone)) {
+      newErrors.phone =
+        "Phone number must include country code and be 10 digits (e.g., +33 9876543210).";
     }
 
     // DOB validation
@@ -270,7 +271,7 @@ const UserForm = () => {
                   className={`w-full px-4 py-2 border rounded-lg ${
                     errors.phone ? "border-red-500" : "border-gray-300"
                   } focus:outline-none focus:ring focus:ring-blue-300`}
-                  placeholder="Enter your phone number"
+                  placeholder="+33 9876543210"
                 />
                 {errors.phone && (
                   <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
